@@ -23,3 +23,13 @@ This project aims to implement an authentication microservice using the concept 
 ## Database diagram
 
 ![Diagram](img/Auth_user.png "Diagram")
+
+---
+
+## Usage
+
+### Docker
+
+''' Bash
+docker-compose -d up
+'''

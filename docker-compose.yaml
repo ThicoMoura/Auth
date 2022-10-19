@@ -5,7 +5,7 @@ services:
   auth:
     build: .
     volumes:
-      - .:/go/src/
+      - .:/go/src/github.com/ThicoMoura/Auth
 
   db:
     image: postgres:15.0-alpine3.16

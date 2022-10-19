@@ -1,12 +1,12 @@
-CREATE TABLE IF NOT EXISTS "user" (
+CREATE TABLE IF NOT EXISTS "users" (
   "id" bigserial PRIMARY KEY,
-  "cpf" bigserial UNIQUE,
+  "cpf" varchar UNIQUE NOT NULL,
   "name" varchar NOT NULL,
   "pass" varchar NOT NULL,
   "active" bool NOT NULL DEFAULT true
 );
 
-CREATE TABLE IF NOT EXISTS "group" (
+CREATE TABLE IF NOT EXISTS "groups" (
   "id" bigserial PRIMARY KEY,
   "name" varchar NOT NULL
 );
@@ -38,10 +38,10 @@ CREATE INDEX ON "group_permission" ("group");
 
 CREATE INDEX ON "group_permission" ("permission");
 
-ALTER TABLE "user_group" ADD FOREIGN KEY ("user") REFERENCES "user" ("id");
+ALTER TABLE "user_group" ADD FOREIGN KEY ("user") REFERENCES "users" ("id");
 
-ALTER TABLE "user_group" ADD FOREIGN KEY ("group") REFERENCES "group" ("id");
+ALTER TABLE "user_group" ADD FOREIGN KEY ("group") REFERENCES "groups" ("id");
 
-ALTER TABLE "group_permission" ADD FOREIGN KEY ("group") REFERENCES "group" ("id");
+ALTER TABLE "group_permission" ADD FOREIGN KEY ("group") REFERENCES "groups" ("id");
 
 ALTER TABLE "group_permission" ADD FOREIGN KEY ("permission") REFERENCES "permission" ("id");

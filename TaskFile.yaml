@@ -8,4 +8,7 @@ tasks:
       - migrate -path infrastructure/db/migration -database postgres://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME?sslmode=disable -verbose up
   migratedown:
     cmds: 
-      - migrate -path infrastructure/db/migration -database postgres://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME?sslmode=disable -verbose up
+      - migrate -path infrastructure/db/migration -database postgres://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME?sslmode=disable -verbose down
+  sqlc:
+    cmds:
+      - sqlc generate
