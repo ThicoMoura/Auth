@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS group;
+DROP TABLE IF EXISTS user_group;
+DROP TABLE IF EXISTS permission;
+DROP TABLE IF EXISTS group_permission;

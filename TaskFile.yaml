@@ -1,0 +1,11 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  migrateup:
+    cmds: 
+      - migrate -path infrastructure/db/migration -database postgres://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME?sslmode=disable -verbose up
+  migratedown:
+    cmds: 
+      - migrate -path infrastructure/db/migration -database postgres://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME?sslmode=disable -verbose up

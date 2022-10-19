@@ -4,6 +4,8 @@ WORKDIR /go/src
 ENV PATH="go/bin:${PATH}"
 ENV CGO_ENABLE=1
 
-RUN apt-get update
+RUN apt-get update \
+    && go install github.com/go-task/task/v3/cmd/task@latest \
+    && go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 
 CMD ["tail", "-f", "/dev/null"]

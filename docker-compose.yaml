@@ -6,3 +6,15 @@ services:
     build: .
     volumes:
       - .:/go/src/
+
+  db:
+    image: postgres:15.0-alpine3.16
+    ports:
+      - 5432:5432
+    volumes:
+      - .pgdata:/var/lib/postgresql/data
+    environment:
+      - PGDATA=/var/lib/postgresql/data
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=testinho
+      - POSTGRES_DB=auth
