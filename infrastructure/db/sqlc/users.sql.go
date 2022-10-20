@@ -59,11 +59,16 @@ func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, cpf, name, pass, active FROM users
+SELECT id, cpf, name, pass, active FROM users ORDER BY id LIMIT $1 OFFSET $2
 `
 
-func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.query(ctx, q.listUsersStmt, listUsers)
+type ListUsersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -91,23 +96,33 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateUsers = `-- name: UpdateUsers :exec
-UPDATE users SET cpf = $2, name = $3, pass = $4 WHERE id = $1
+const updateUsers = `-- name: UpdateUsers :one
+UPDATE users SET cpf = $2, name = $3, pass = $4, active = $5 WHERE id = $1 RETURNING id, cpf, name, pass, active
 `
 
 type UpdateUsersParams struct {
-	ID   int64  `json:"id"`
-	Cpf  string `json:"cpf"`
-	Name string `json:"name"`
-	Pass string `json:"pass"`
+	ID     int64  `json:"id"`
+	Cpf    string `json:"cpf"`
+	Name   string `json:"name"`
+	Pass   string `json:"pass"`
+	Active bool   `json:"active"`
 }
 
-func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) error {
-	_, err := q.exec(ctx, q.updateUsersStmt, updateUsers,
+func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUsersStmt, updateUsers,
 		arg.ID,
 		arg.Cpf,
 		arg.Name,
 		arg.Pass,
+		arg.Active,
 	)
-	return err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Cpf,
+		&i.Name,
+		&i.Pass,
+		&i.Active,
+	)
+	return i, err
 }

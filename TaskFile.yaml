@@ -12,3 +12,6 @@ tasks:
   sqlc:
     cmds:
       - sqlc generate
+  test:
+    cmds:
+      - go test -v -cover ./...
