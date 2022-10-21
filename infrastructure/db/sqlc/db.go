@@ -24,49 +24,73 @@ func New(db DBTX) *Queries {
 func Prepare(ctx context.Context, db DBTX) (*Queries, error) {
 	q := Queries{db: db}
 	var err error
-	if q.createUsersStmt, err = db.PrepareContext(ctx, createUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query CreateUsers: %w", err)
+	if q.createUserStmt, err = db.PrepareContext(ctx, createUser); err != nil {
+		return nil, fmt.Errorf("error preparing query CreateUser: %w", err)
 	}
-	if q.deleteUsersStmt, err = db.PrepareContext(ctx, deleteUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query DeleteUsers: %w", err)
+	if q.deleteUserStmt, err = db.PrepareContext(ctx, deleteUser); err != nil {
+		return nil, fmt.Errorf("error preparing query DeleteUser: %w", err)
 	}
-	if q.getUsersStmt, err = db.PrepareContext(ctx, getUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query GetUsers: %w", err)
+	if q.getUserStmt, err = db.PrepareContext(ctx, getUser); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUser: %w", err)
 	}
-	if q.listUsersStmt, err = db.PrepareContext(ctx, listUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query ListUsers: %w", err)
+	if q.getUserByCPFStmt, err = db.PrepareContext(ctx, getUserByCPF); err != nil {
+		return nil, fmt.Errorf("error preparing query GetUserByCPF: %w", err)
 	}
-	if q.updateUsersStmt, err = db.PrepareContext(ctx, updateUsers); err != nil {
-		return nil, fmt.Errorf("error preparing query UpdateUsers: %w", err)
+	if q.listUserStmt, err = db.PrepareContext(ctx, listUser); err != nil {
+		return nil, fmt.Errorf("error preparing query ListUser: %w", err)
+	}
+	if q.updateUserActiveStmt, err = db.PrepareContext(ctx, updateUserActive); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserActive: %w", err)
+	}
+	if q.updateUserNameStmt, err = db.PrepareContext(ctx, updateUserName); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserName: %w", err)
+	}
+	if q.updateUserPassStmt, err = db.PrepareContext(ctx, updateUserPass); err != nil {
+		return nil, fmt.Errorf("error preparing query UpdateUserPass: %w", err)
 	}
 	return &q, nil
 }
 
 func (q *Queries) Close() error {
 	var err error
-	if q.createUsersStmt != nil {
-		if cerr := q.createUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing createUsersStmt: %w", cerr)
+	if q.createUserStmt != nil {
+		if cerr := q.createUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing createUserStmt: %w", cerr)
 		}
 	}
-	if q.deleteUsersStmt != nil {
-		if cerr := q.deleteUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing deleteUsersStmt: %w", cerr)
+	if q.deleteUserStmt != nil {
+		if cerr := q.deleteUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing deleteUserStmt: %w", cerr)
 		}
 	}
-	if q.getUsersStmt != nil {
-		if cerr := q.getUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing getUsersStmt: %w", cerr)
+	if q.getUserStmt != nil {
+		if cerr := q.getUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserStmt: %w", cerr)
 		}
 	}
-	if q.listUsersStmt != nil {
-		if cerr := q.listUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing listUsersStmt: %w", cerr)
+	if q.getUserByCPFStmt != nil {
+		if cerr := q.getUserByCPFStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing getUserByCPFStmt: %w", cerr)
 		}
 	}
-	if q.updateUsersStmt != nil {
-		if cerr := q.updateUsersStmt.Close(); cerr != nil {
-			err = fmt.Errorf("error closing updateUsersStmt: %w", cerr)
+	if q.listUserStmt != nil {
+		if cerr := q.listUserStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing listUserStmt: %w", cerr)
+		}
+	}
+	if q.updateUserActiveStmt != nil {
+		if cerr := q.updateUserActiveStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserActiveStmt: %w", cerr)
+		}
+	}
+	if q.updateUserNameStmt != nil {
+		if cerr := q.updateUserNameStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserNameStmt: %w", cerr)
+		}
+	}
+	if q.updateUserPassStmt != nil {
+		if cerr := q.updateUserPassStmt.Close(); cerr != nil {
+			err = fmt.Errorf("error closing updateUserPassStmt: %w", cerr)
 		}
 	}
 	return err
@@ -106,23 +130,29 @@ func (q *Queries) queryRow(ctx context.Context, stmt *sql.Stmt, query string, ar
 }
 
 type Queries struct {
-	db              DBTX
-	tx              *sql.Tx
-	createUsersStmt *sql.Stmt
-	deleteUsersStmt *sql.Stmt
-	getUsersStmt    *sql.Stmt
-	listUsersStmt   *sql.Stmt
-	updateUsersStmt *sql.Stmt
+	db                   DBTX
+	tx                   *sql.Tx
+	createUserStmt       *sql.Stmt
+	deleteUserStmt       *sql.Stmt
+	getUserStmt          *sql.Stmt
+	getUserByCPFStmt     *sql.Stmt
+	listUserStmt         *sql.Stmt
+	updateUserActiveStmt *sql.Stmt
+	updateUserNameStmt   *sql.Stmt
+	updateUserPassStmt   *sql.Stmt
 }
 
 func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 	return &Queries{
-		db:              tx,
-		tx:              tx,
-		createUsersStmt: q.createUsersStmt,
-		deleteUsersStmt: q.deleteUsersStmt,
-		getUsersStmt:    q.getUsersStmt,
-		listUsersStmt:   q.listUsersStmt,
-		updateUsersStmt: q.updateUsersStmt,
+		db:                   tx,
+		tx:                   tx,
+		createUserStmt:       q.createUserStmt,
+		deleteUserStmt:       q.deleteUserStmt,
+		getUserStmt:          q.getUserStmt,
+		getUserByCPFStmt:     q.getUserByCPFStmt,
+		listUserStmt:         q.listUserStmt,
+		updateUserActiveStmt: q.updateUserActiveStmt,
+		updateUserNameStmt:   q.updateUserNameStmt,
+		updateUserPassStmt:   q.updateUserPassStmt,
 	}
 }

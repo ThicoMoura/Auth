@@ -9,18 +9,18 @@ import (
 	"context"
 )
 
-const createUsers = `-- name: CreateUsers :one
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (cpf, name, pass) VALUES ($1, $2, $3) RETURNING id, cpf, name, pass, active
 `
 
-type CreateUsersParams struct {
+type CreateUserParams struct {
 	Cpf  string `json:"cpf"`
 	Name string `json:"name"`
 	Pass string `json:"pass"`
 }
 
-func (q *Queries) CreateUsers(ctx context.Context, arg CreateUsersParams) (User, error) {
-	row := q.queryRow(ctx, q.createUsersStmt, createUsers, arg.Cpf, arg.Name, arg.Pass)
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+	row := q.queryRow(ctx, q.createUserStmt, createUser, arg.Cpf, arg.Name, arg.Pass)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -32,21 +32,21 @@ func (q *Queries) CreateUsers(ctx context.Context, arg CreateUsersParams) (User,
 	return i, err
 }
 
-const deleteUsers = `-- name: DeleteUsers :exec
+const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) DeleteUsers(ctx context.Context, id int64) error {
-	_, err := q.exec(ctx, q.deleteUsersStmt, deleteUsers, id)
+func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
+	_, err := q.exec(ctx, q.deleteUserStmt, deleteUser, id)
 	return err
 }
 
-const getUsers = `-- name: GetUsers :one
+const getUser = `-- name: GetUser :one
 SELECT id, cpf, name, pass, active FROM users WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
-	row := q.queryRow(ctx, q.getUsersStmt, getUsers, id)
+func (q *Queries) GetUser(ctx context.Context, id int64) (User, error) {
+	row := q.queryRow(ctx, q.getUserStmt, getUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -58,17 +58,34 @@ func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
-const listUsers = `-- name: ListUsers :many
+const getUserByCPF = `-- name: GetUserByCPF :one
+SELECT id, cpf, name, pass, active FROM users WHERE cpf = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByCPF(ctx context.Context, cpf string) (User, error) {
+	row := q.queryRow(ctx, q.getUserByCPFStmt, getUserByCPF, cpf)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Cpf,
+		&i.Name,
+		&i.Pass,
+		&i.Active,
+	)
+	return i, err
+}
+
+const listUser = `-- name: ListUser :many
 SELECT id, cpf, name, pass, active FROM users ORDER BY id LIMIT $1 OFFSET $2
 `
 
-type ListUsersParams struct {
+type ListUserParams struct {
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.query(ctx, q.listUsersStmt, listUsers, arg.Limit, arg.Offset)
+func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]User, error) {
+	rows, err := q.query(ctx, q.listUserStmt, listUser, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -96,26 +113,61 @@ func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, e
 	return items, nil
 }
 
-const updateUsers = `-- name: UpdateUsers :one
-UPDATE users SET cpf = $2, name = $3, pass = $4, active = $5 WHERE id = $1 RETURNING id, cpf, name, pass, active
+const updateUserActive = `-- name: UpdateUserActive :one
+UPDATE users SET active = $2 WHERE id = $1 RETURNING id, cpf, name, pass, active
 `
 
-type UpdateUsersParams struct {
-	ID     int64  `json:"id"`
-	Cpf    string `json:"cpf"`
-	Name   string `json:"name"`
-	Pass   string `json:"pass"`
-	Active bool   `json:"active"`
+type UpdateUserActiveParams struct {
+	ID     int64 `json:"id"`
+	Active bool  `json:"active"`
 }
 
-func (q *Queries) UpdateUsers(ctx context.Context, arg UpdateUsersParams) (User, error) {
-	row := q.queryRow(ctx, q.updateUsersStmt, updateUsers,
-		arg.ID,
-		arg.Cpf,
-		arg.Name,
-		arg.Pass,
-		arg.Active,
+func (q *Queries) UpdateUserActive(ctx context.Context, arg UpdateUserActiveParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUserActiveStmt, updateUserActive, arg.ID, arg.Active)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Cpf,
+		&i.Name,
+		&i.Pass,
+		&i.Active,
 	)
+	return i, err
+}
+
+const updateUserName = `-- name: UpdateUserName :one
+UPDATE users SET name = $2 WHERE id = $1 RETURNING id, cpf, name, pass, active
+`
+
+type UpdateUserNameParams struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) UpdateUserName(ctx context.Context, arg UpdateUserNameParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUserNameStmt, updateUserName, arg.ID, arg.Name)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Cpf,
+		&i.Name,
+		&i.Pass,
+		&i.Active,
+	)
+	return i, err
+}
+
+const updateUserPass = `-- name: UpdateUserPass :one
+UPDATE users SET pass = $2 WHERE id = $1 RETURNING id, cpf, name, pass, active
+`
+
+type UpdateUserPassParams struct {
+	ID   int64  `json:"id"`
+	Pass string `json:"pass"`
+}
+
+func (q *Queries) UpdateUserPass(ctx context.Context, arg UpdateUserPassParams) (User, error) {
+	row := q.queryRow(ctx, q.updateUserPassStmt, updateUserPass, arg.ID, arg.Pass)
 	var i User
 	err := row.Scan(
 		&i.ID,
