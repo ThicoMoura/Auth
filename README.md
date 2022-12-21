@@ -2,7 +2,7 @@
 
 ## Description
 
-This project aims to implement an authentication microservice using the concept of microservices and grpc.
+This a project with implements microsservice of authenticate.
 
 ---
 
@@ -14,12 +14,10 @@ This project aims to implement an authentication microservice using the concept 
 
 [ ] - User can create permissions and group permission.
 
-[ ] - User can ascend to administrator.
-
-[ ] - Admin can to manage users and permissions.
-
 ---
 
 ## Database diagram
 
-![Diagram](img/Auth_user.png "Diagram")
+[Access diagram page](https://dbdocs.io/ThicoMoura/Auth)
+
+![Diagram](img/diagram.png "Diagram")
