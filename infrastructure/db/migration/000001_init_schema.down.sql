@@ -1,5 +1,0 @@
-DROP TABLE IF EXISTS group_permission;
-DROP TABLE IF EXISTS user_group;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS groups;
-DROP TABLE IF EXISTS permission;

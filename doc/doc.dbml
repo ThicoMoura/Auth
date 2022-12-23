@@ -1,0 +1,47 @@
+Project Auth {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Database of Auth API
+  '''
+}
+
+Table group as G {
+  id uuid [pk]
+  
+  name varchar [not null]
+  
+  active bool [not null, default: true]
+}
+
+Table user as U {
+  id uuid [pk]
+  
+  group uuid [ref: > G.id, not null]
+  
+  cpf varchar [unique, not null]
+  
+  name varchar [not null]
+  pass varchar [not null]
+  
+  active bool [not null, default: true]
+}
+
+Table system as S {
+  id uuid [pk]
+  
+  name varchar [not null]
+  
+  active bool [not null, default: true]
+}
+
+Table access as A {
+  id uuid [pk]
+  
+  system uuid [ref: > S.id, not null]
+  
+  table varchar [unique, not null]
+  type varchar[]
+}
+
+ref: G.id <> A.id
+ref: U.id <> A.id

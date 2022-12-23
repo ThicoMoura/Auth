@@ -1,0 +1,39 @@
+FROM golang@sha256:f33331e12ca70192c0dbab2d0a74a52e1dd344221507d88aaea605b0219a212f AS build
+
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64 \
+    USER=rh \
+    UID=10001
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/nonexistent" \
+    --shell "/sbin/nologin" \
+    --no-create-home \
+    --uid "${UID}" \
+    "${USER}"
+
+WORKDIR $GOPATH/src/github.com/ThicoMoura/auth
+
+COPY . .
+
+RUN go mod tidy
+
+RUN go build -ldflags="-w -s" -o /go/bin/main
+
+FROM scratch
+
+COPY --from=build /etc/passwd /etc/passwd
+COPY --from=build /etc/group /etc/group
+
+WORKDIR /go/bin
+
+COPY --from=build /go/src/github.com/ThicoMoura/rh/.env .
+COPY --from=build /go/bin/main .
+
+USER rh:rh
+
+ENTRYPOINT ["/go/bin/main"]

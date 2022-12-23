@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS "group_access", "user_access", "system", "access", "user", "group";

@@ -1,20 +1,48 @@
-version: "3.9"
+version: '3.9'
 
 services:
+    dev:
+      build: 
+        context: .
+        dockerfile: dev
+      ports:
+        - 80:80
+      volumes:
+        - .:/go/src/github.com/ThicoMoura/auth
+      depends_on:
+        - db
 
-  auth:
-    build: .
-    volumes:
-      - .:/go/src/github.com/ThicoMoura/Auth
+    dbdocs:
+      build:
+        context: .
+        dockerfile: dbdocs
+      volumes:
+        - ./doc:/home/docs
 
-  db:
-    image: postgres:15.0-alpine3.16
-    ports:
-      - 5432:5432
-    volumes:
-      - .pgdata:/var/lib/postgresql/data
-    environment:
-      - PGDATA=/var/lib/postgresql/data
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=testinho
-      - POSTGRES_DB=auth
+    prod:
+      build:
+        context: .
+        dockerfile: prod
+      ports: 
+        - 80:80
+      restart: on-failure
+      depends_on:
+        - db
+
+    db:
+      image: postgres@sha256:f46b2ae1a00a87552a52fe83d36f7aef60ef61f9d64baf3bfc4abaa89847024b
+      ports:
+        - 5432:5432
+      volumes:
+        - .pgdata:/var/lib/postgresql/data
+      env_file:
+        - .env
+      
+    pgadmin: 
+      image: dpage/pgadmin4@sha256:49aa611e99d306ba864a7211fad4b02ac31f59edeb2e93aeb4bed032429a27cc
+      ports:
+        - 8080:80
+      env_file:
+        - .env
+      depends_on:
+        - db
