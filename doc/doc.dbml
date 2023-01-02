@@ -6,7 +6,7 @@ Project Auth {
 }
 
 Table group as G {
-  id uuid [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   
   name varchar [not null]
   
@@ -14,12 +14,11 @@ Table group as G {
 }
 
 Table user as U {
-  id uuid [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   
   group uuid [ref: > G.id, not null]
   
-  cpf varchar [unique, not null]
-  
+  email varchar [not null]
   name varchar [not null]
   pass varchar [not null]
   
@@ -27,7 +26,7 @@ Table user as U {
 }
 
 Table system as S {
-  id uuid [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   
   name varchar [not null]
   
@@ -35,12 +34,25 @@ Table system as S {
 }
 
 Table access as A {
-  id uuid [pk]
+  id uuid [pk, default: `gen_random_uuid()`]
   
   system uuid [ref: > S.id, not null]
   
   table varchar [unique, not null]
   type varchar[]
+}
+
+Table session as SE {
+  id uuid [pk, default: `gen_random_uuid()`]
+
+  user uuid [ref: > U.id, not null]
+
+  token varchar [not null]
+  ip varchar [not null]
+  agent varchar [not null]
+
+  created_at timestamptz [not null, default: `now()`]
+  expires_at timestamptz [not null]
 }
 
 ref: G.id <> A.id

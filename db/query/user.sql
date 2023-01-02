@@ -1,11 +1,11 @@
 -- name: NewUser :one
-INSERT INTO "user" ("group", "cpf", "name", "pass") VALUES ($1, $2, $3, $4) RETURNING *;
+INSERT INTO "user" ("group", "email", "name", "pass") VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetUser :one
 SELECT * FROM "user" WHERE "id" = $1 LIMIT 1;
 
 -- name: GetUserByCPF :one
-SELECT * FROM "user" WHERE "cpf" = $1 LIMIT 1;
+SELECT * FROM "user" WHERE "email" = $1 LIMIT 1;
 
 -- name: GetUserByGroup :many
 SELECT * FROM  "user" WHERE "group" = $1 ORDER BY "name";

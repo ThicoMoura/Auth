@@ -15,8 +15,8 @@ const DeleteGroup = `-- name: DeleteGroup :one
 DELETE FROM "group" WHERE "id" = $1 RETURNING id, name, active
 `
 
-func (q *Queries) DeleteGroup(ctx context.Context, db DBTX, id uuid.UUID) (*Group, error) {
-	row := db.QueryRow(ctx, DeleteGroup, id)
+func (q *Queries) DeleteGroup(ctx context.Context, id uuid.UUID) (*Group, error) {
+	row := q.db.QueryRow(ctx, DeleteGroup, id)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.Active)
 	return &i, err
@@ -26,8 +26,8 @@ const GetGroup = `-- name: GetGroup :one
 SELECT id, name, active FROM "group" WHERE "id" = $1 LIMIT 1
 `
 
-func (q *Queries) GetGroup(ctx context.Context, db DBTX, id uuid.UUID) (*Group, error) {
-	row := db.QueryRow(ctx, GetGroup, id)
+func (q *Queries) GetGroup(ctx context.Context, id uuid.UUID) (*Group, error) {
+	row := q.db.QueryRow(ctx, GetGroup, id)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.Active)
 	return &i, err
@@ -37,8 +37,8 @@ const ListGroup = `-- name: ListGroup :many
 SELECT id, name, active FROM "group" ORDER BY "name"
 `
 
-func (q *Queries) ListGroup(ctx context.Context, db DBTX) ([]*Group, error) {
-	rows, err := db.Query(ctx, ListGroup)
+func (q *Queries) ListGroup(ctx context.Context) ([]*Group, error) {
+	rows, err := q.db.Query(ctx, ListGroup)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +66,8 @@ type ListGroupPageParams struct {
 	Offset int32 `db:"offset" json:"offset"`
 }
 
-func (q *Queries) ListGroupPage(ctx context.Context, db DBTX, arg *ListGroupPageParams) ([]*Group, error) {
-	rows, err := db.Query(ctx, ListGroupPage, arg.Limit, arg.Offset)
+func (q *Queries) ListGroupPage(ctx context.Context, arg *ListGroupPageParams) ([]*Group, error) {
+	rows, err := q.db.Query(ctx, ListGroupPage, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -90,8 +90,8 @@ const NewGroup = `-- name: NewGroup :one
 INSERT INTO "group" ("name") VALUES ($1) RETURNING id, name, active
 `
 
-func (q *Queries) NewGroup(ctx context.Context, db DBTX, name string) (*Group, error) {
-	row := db.QueryRow(ctx, NewGroup, name)
+func (q *Queries) NewGroup(ctx context.Context, name string) (*Group, error) {
+	row := q.db.QueryRow(ctx, NewGroup, name)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.Active)
 	return &i, err
@@ -107,8 +107,8 @@ type UpdateGroupParams struct {
 	Active bool      `db:"active" json:"active"`
 }
 
-func (q *Queries) UpdateGroup(ctx context.Context, db DBTX, arg *UpdateGroupParams) (*Group, error) {
-	row := db.QueryRow(ctx, UpdateGroup, arg.ID, arg.Name, arg.Active)
+func (q *Queries) UpdateGroup(ctx context.Context, arg *UpdateGroupParams) (*Group, error) {
+	row := q.db.QueryRow(ctx, UpdateGroup, arg.ID, arg.Name, arg.Active)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.Active)
 	return &i, err

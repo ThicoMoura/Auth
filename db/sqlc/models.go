@@ -5,6 +5,8 @@
 package db
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -26,6 +28,16 @@ type GroupAccess struct {
 	AccessID uuid.UUID `db:"access_id" json:"access_id"`
 }
 
+type Session struct {
+	ID        uuid.UUID `db:"id" json:"id"`
+	User      uuid.UUID `db:"user" json:"user"`
+	Token     string    `db:"token" json:"token"`
+	Ip        string    `db:"ip" json:"ip"`
+	Agent     string    `db:"agent" json:"agent"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	ExpiresAt time.Time `db:"expires_at" json:"expires_at"`
+}
+
 type System struct {
 	ID     uuid.UUID `db:"id" json:"id"`
 	Name   string    `db:"name" json:"name"`
@@ -35,7 +47,7 @@ type System struct {
 type User struct {
 	ID     uuid.UUID `db:"id" json:"id"`
 	Group  uuid.UUID `db:"group" json:"group"`
-	Cpf    string    `db:"cpf" json:"cpf"`
+	Email  string    `db:"email" json:"email"`
 	Name   string    `db:"name" json:"name"`
 	Pass   string    `db:"pass" json:"pass"`
 	Active bool      `db:"active" json:"active"`

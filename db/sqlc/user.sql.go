@@ -12,16 +12,16 @@ import (
 )
 
 const DeleteUser = `-- name: DeleteUser :one
-DELETE FROM "user" WHERE "id" = $1 RETURNING id, "group", cpf, name, pass, active
+DELETE FROM "user" WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id uuid.UUID) (*User, error) {
-	row := db.QueryRow(ctx, DeleteUser, id)
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) (*User, error) {
+	row := q.db.QueryRow(ctx, DeleteUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,
@@ -30,16 +30,16 @@ func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id uuid.UUID) (*User,
 }
 
 const GetUser = `-- name: GetUser :one
-SELECT id, "group", cpf, name, pass, active FROM "user" WHERE "id" = $1 LIMIT 1
+SELECT id, "group", email, name, pass, active FROM "user" WHERE "id" = $1 LIMIT 1
 `
 
-func (q *Queries) GetUser(ctx context.Context, db DBTX, id uuid.UUID) (*User, error) {
-	row := db.QueryRow(ctx, GetUser, id)
+func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
+	row := q.db.QueryRow(ctx, GetUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,
@@ -48,16 +48,16 @@ func (q *Queries) GetUser(ctx context.Context, db DBTX, id uuid.UUID) (*User, er
 }
 
 const GetUserByCPF = `-- name: GetUserByCPF :one
-SELECT id, "group", cpf, name, pass, active FROM "user" WHERE "cpf" = $1 LIMIT 1
+SELECT id, "group", email, name, pass, active FROM "user" WHERE "email" = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByCPF(ctx context.Context, db DBTX, cpf string) (*User, error) {
-	row := db.QueryRow(ctx, GetUserByCPF, cpf)
+func (q *Queries) GetUserByCPF(ctx context.Context, email string) (*User, error) {
+	row := q.db.QueryRow(ctx, GetUserByCPF, email)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,
@@ -66,11 +66,11 @@ func (q *Queries) GetUserByCPF(ctx context.Context, db DBTX, cpf string) (*User,
 }
 
 const GetUserByGroup = `-- name: GetUserByGroup :many
-SELECT id, "group", cpf, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name"
+SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name"
 `
 
-func (q *Queries) GetUserByGroup(ctx context.Context, db DBTX, group uuid.UUID) ([]*User, error) {
-	rows, err := db.Query(ctx, GetUserByGroup, group)
+func (q *Queries) GetUserByGroup(ctx context.Context, group uuid.UUID) ([]*User, error) {
+	rows, err := q.db.Query(ctx, GetUserByGroup, group)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (q *Queries) GetUserByGroup(ctx context.Context, db DBTX, group uuid.UUID) 
 		if err := rows.Scan(
 			&i.ID,
 			&i.Group,
-			&i.Cpf,
+			&i.Email,
 			&i.Name,
 			&i.Pass,
 			&i.Active,
@@ -97,7 +97,7 @@ func (q *Queries) GetUserByGroup(ctx context.Context, db DBTX, group uuid.UUID) 
 }
 
 const GetUserByGroupPage = `-- name: GetUserByGroupPage :many
-SELECT id, "group", cpf, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name" LIMIT $2 OFFSET $3
+SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name" LIMIT $2 OFFSET $3
 `
 
 type GetUserByGroupPageParams struct {
@@ -106,8 +106,8 @@ type GetUserByGroupPageParams struct {
 	Offset int32     `db:"offset" json:"offset"`
 }
 
-func (q *Queries) GetUserByGroupPage(ctx context.Context, db DBTX, arg *GetUserByGroupPageParams) ([]*User, error) {
-	rows, err := db.Query(ctx, GetUserByGroupPage, arg.Group, arg.Limit, arg.Offset)
+func (q *Queries) GetUserByGroupPage(ctx context.Context, arg *GetUserByGroupPageParams) ([]*User, error) {
+	rows, err := q.db.Query(ctx, GetUserByGroupPage, arg.Group, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (q *Queries) GetUserByGroupPage(ctx context.Context, db DBTX, arg *GetUserB
 		if err := rows.Scan(
 			&i.ID,
 			&i.Group,
-			&i.Cpf,
+			&i.Email,
 			&i.Name,
 			&i.Pass,
 			&i.Active,
@@ -134,11 +134,11 @@ func (q *Queries) GetUserByGroupPage(ctx context.Context, db DBTX, arg *GetUserB
 }
 
 const ListUser = `-- name: ListUser :many
-SELECT id, "group", cpf, name, pass, active FROM "user" ORDER BY "name"
+SELECT id, "group", email, name, pass, active FROM "user" ORDER BY "name"
 `
 
-func (q *Queries) ListUser(ctx context.Context, db DBTX) ([]*User, error) {
-	rows, err := db.Query(ctx, ListUser)
+func (q *Queries) ListUser(ctx context.Context) ([]*User, error) {
+	rows, err := q.db.Query(ctx, ListUser)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +149,7 @@ func (q *Queries) ListUser(ctx context.Context, db DBTX) ([]*User, error) {
 		if err := rows.Scan(
 			&i.ID,
 			&i.Group,
-			&i.Cpf,
+			&i.Email,
 			&i.Name,
 			&i.Pass,
 			&i.Active,
@@ -165,7 +165,7 @@ func (q *Queries) ListUser(ctx context.Context, db DBTX) ([]*User, error) {
 }
 
 const ListUserPage = `-- name: ListUserPage :many
-SELECT id, "group", cpf, name, pass, active FROM "user" ORDER BY "name" LIMIT $1 OFFSET $2
+SELECT id, "group", email, name, pass, active FROM "user" ORDER BY "name" LIMIT $1 OFFSET $2
 `
 
 type ListUserPageParams struct {
@@ -173,8 +173,8 @@ type ListUserPageParams struct {
 	Offset int32 `db:"offset" json:"offset"`
 }
 
-func (q *Queries) ListUserPage(ctx context.Context, db DBTX, arg *ListUserPageParams) ([]*User, error) {
-	rows, err := db.Query(ctx, ListUserPage, arg.Limit, arg.Offset)
+func (q *Queries) ListUserPage(ctx context.Context, arg *ListUserPageParams) ([]*User, error) {
+	rows, err := q.db.Query(ctx, ListUserPage, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +185,7 @@ func (q *Queries) ListUserPage(ctx context.Context, db DBTX, arg *ListUserPagePa
 		if err := rows.Scan(
 			&i.ID,
 			&i.Group,
-			&i.Cpf,
+			&i.Email,
 			&i.Name,
 			&i.Pass,
 			&i.Active,
@@ -201,20 +201,20 @@ func (q *Queries) ListUserPage(ctx context.Context, db DBTX, arg *ListUserPagePa
 }
 
 const NewUser = `-- name: NewUser :one
-INSERT INTO "user" ("group", "cpf", "name", "pass") VALUES ($1, $2, $3, $4) RETURNING id, "group", cpf, name, pass, active
+INSERT INTO "user" ("group", "email", "name", "pass") VALUES ($1, $2, $3, $4) RETURNING id, "group", email, name, pass, active
 `
 
 type NewUserParams struct {
 	Group uuid.UUID `db:"group" json:"group"`
-	Cpf   string    `db:"cpf" json:"cpf"`
+	Email string    `db:"email" json:"email"`
 	Name  string    `db:"name" json:"name"`
 	Pass  string    `db:"pass" json:"pass"`
 }
 
-func (q *Queries) NewUser(ctx context.Context, db DBTX, arg *NewUserParams) (*User, error) {
-	row := db.QueryRow(ctx, NewUser,
+func (q *Queries) NewUser(ctx context.Context, arg *NewUserParams) (*User, error) {
+	row := q.db.QueryRow(ctx, NewUser,
 		arg.Group,
-		arg.Cpf,
+		arg.Email,
 		arg.Name,
 		arg.Pass,
 	)
@@ -222,7 +222,7 @@ func (q *Queries) NewUser(ctx context.Context, db DBTX, arg *NewUserParams) (*Us
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,
@@ -231,7 +231,7 @@ func (q *Queries) NewUser(ctx context.Context, db DBTX, arg *NewUserParams) (*Us
 }
 
 const UpdateUser = `-- name: UpdateUser :one
-UPDATE "user" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING id, "group", cpf, name, pass, active
+UPDATE "user" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
 `
 
 type UpdateUserParams struct {
@@ -240,13 +240,13 @@ type UpdateUserParams struct {
 	Active bool      `db:"active" json:"active"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) (*User, error) {
-	row := db.QueryRow(ctx, UpdateUser, arg.ID, arg.Name, arg.Active)
+func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error) {
+	row := q.db.QueryRow(ctx, UpdateUser, arg.ID, arg.Name, arg.Active)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,
@@ -255,7 +255,7 @@ func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams
 }
 
 const UpdateUserPass = `-- name: UpdateUserPass :one
-UPDATE "user" SET "pass" = $2 WHERE "id" = $1 RETURNING id, "group", cpf, name, pass, active
+UPDATE "user" SET "pass" = $2 WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
 `
 
 type UpdateUserPassParams struct {
@@ -263,13 +263,13 @@ type UpdateUserPassParams struct {
 	Pass string    `db:"pass" json:"pass"`
 }
 
-func (q *Queries) UpdateUserPass(ctx context.Context, db DBTX, arg *UpdateUserPassParams) (*User, error) {
-	row := db.QueryRow(ctx, UpdateUserPass, arg.ID, arg.Pass)
+func (q *Queries) UpdateUserPass(ctx context.Context, arg *UpdateUserPassParams) (*User, error) {
+	row := q.db.QueryRow(ctx, UpdateUserPass, arg.ID, arg.Pass)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Group,
-		&i.Cpf,
+		&i.Email,
 		&i.Name,
 		&i.Pass,
 		&i.Active,

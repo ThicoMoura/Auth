@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
     dev:
@@ -11,6 +11,9 @@ services:
         - .:/go/src/github.com/ThicoMoura/auth
       depends_on:
         - db
+      profiles: ["dev"]
+      networks: 
+        - database
 
     dbdocs:
       build:
@@ -18,6 +21,7 @@ services:
         dockerfile: dbdocs
       volumes:
         - ./doc:/home/docs
+      profiles: ["docs"]
 
     prod:
       build:
@@ -28,6 +32,9 @@ services:
       restart: on-failure
       depends_on:
         - db
+      profiles: ["prod"]
+      networks: 
+        - database
 
     db:
       image: postgres@sha256:f46b2ae1a00a87552a52fe83d36f7aef60ef61f9d64baf3bfc4abaa89847024b
@@ -37,6 +44,9 @@ services:
         - .pgdata:/var/lib/postgresql/data
       env_file:
         - .env
+      profiles: ["dev", "prod"]
+      networks: 
+        - database
       
     pgadmin: 
       image: dpage/pgadmin4@sha256:49aa611e99d306ba864a7211fad4b02ac31f59edeb2e93aeb4bed032429a27cc
@@ -46,3 +56,9 @@ services:
         - .env
       depends_on:
         - db
+      profiles: ["debug"]
+      networks: 
+        - database
+
+networks:
+  database:

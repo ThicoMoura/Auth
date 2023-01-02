@@ -12,11 +12,10 @@ import (
 )
 
 const (
-	dbSource = "postgresql://auth:ernkawezcvnwebj897472@db:5431/auth?sslmode=disable"
+	dbSource = "postgres://auth:we4naoir905adfh98u34235@db:5432/auth?sslmode=disable"
 )
 
 var testQueries *db.Queries
-var dbtx db.DBTX
 
 func TestMain(m *testing.M) {
 	conn, err := pgx.Connect(context.Background(), dbSource)
@@ -24,8 +23,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot conect to db:", err)
 	}
 
-	testQueries = db.New()
-	dbtx = conn
+	testQueries = db.New(conn)
 
 	os.Exit(m.Run())
 }

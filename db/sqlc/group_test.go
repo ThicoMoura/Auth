@@ -13,7 +13,7 @@ import (
 func NewGroup(t *testing.T) *db.Group {
 	name := util.RandomString(10)
 
-	group, err := testQueries.NewGroup(context.Background(), dbtx, name)
+	group, err := testQueries.NewGroup(context.Background(), name)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group)
@@ -25,7 +25,7 @@ func NewGroup(t *testing.T) *db.Group {
 }
 
 func DeleteGroup(t *testing.T, ID uuid.UUID) *db.Group {
-	group, err := testQueries.DeleteGroup(context.Background(), dbtx, ID)
+	group, err := testQueries.DeleteGroup(context.Background(), ID)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, group)

@@ -3,12 +3,12 @@ version: '3'
 dotenv: ['.env']
 
 tasks:
-  migrateup:
+  up:
     cmds: 
-      - migrate -path db/migration -database $DBSOURCE -verbose up
-  migratedown:
+      - migrate -path db/migration -database $DBSOURCE -verbose up 1
+  down:
     cmds: 
-      - migrate -path db/migration -database $DBSOURCE -verbose down
+      - migrate -path db/migration -database $DBSOURCE -verbose down 1
   sqlc:
     cmds:
       - sqlc generate

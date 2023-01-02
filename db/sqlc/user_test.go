@@ -12,17 +12,17 @@ import (
 
 func NewUser(t *testing.T) *db.User {
 	arg := &db.NewUserParams{
-		Cpf:  util.RandomString(11),
-		Name: util.RandomString(10),
-		Pass: util.RandomString(10),
+		Email: util.RandomString(11),
+		Name:  util.RandomString(10),
+		Pass:  util.RandomString(10),
 	}
 
-	user, err := testQueries.NewUser(context.Background(), dbtx, arg)
+	user, err := testQueries.NewUser(context.Background(), arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
-	require.Equal(t, arg.Cpf, user.Cpf)
+	require.Equal(t, arg.Email, user.Email)
 	require.Equal(t, arg.Name, user.Name)
 	require.Equal(t, arg.Pass, user.Pass)
 	require.Equal(t, true, user.Active)
@@ -33,7 +33,7 @@ func NewUser(t *testing.T) *db.User {
 }
 
 func DeleteUser(t *testing.T, ID uuid.UUID) *db.User {
-	user, err := testQueries.DeleteUser(context.Background(), dbtx, ID)
+	user, err := testQueries.DeleteUser(context.Background(), ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 	require.Equal(t, ID, user.ID)
