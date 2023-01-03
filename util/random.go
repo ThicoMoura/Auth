@@ -27,3 +27,7 @@ func RandomString(n int) string {
 
 	return sb.String()
 }
+
+func RandomBool() bool {
+	return []bool{true, false}[rand.Intn(2)]
+}

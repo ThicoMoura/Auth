@@ -2,16 +2,13 @@
 INSERT INTO "user" ("group", "email", "name", "pass") VALUES ($1, $2, $3, $4) RETURNING *;
 
 -- name: GetUser :one
-SELECT * FROM "user" WHERE "id" = $1 LIMIT 1;
+SELECT * FROM "user" WHERE "id" = $1 OR "email" = $2 LIMIT 1;
 
--- name: GetUserByCPF :one
-SELECT * FROM "user" WHERE "email" = $1 LIMIT 1;
+-- name: FindUser :many
+SELECT * FROM  "user" WHERE "group" = $1 OR "name" LIKE $2 ORDER BY "name";
 
--- name: GetUserByGroup :many
-SELECT * FROM  "user" WHERE "group" = $1 ORDER BY "name";
-
--- name: GetUserByGroupPage :many
-SELECT * FROM  "user" WHERE "group" = $1 ORDER BY "name" LIMIT $2 OFFSET $3;
+-- name: FindUserPage :many
+SELECT * FROM  "user" WHERE "group" = $1 OR "name" LIKE $2 ORDER BY "name" LIMIT $3 OFFSET $4;
 
 -- name: ListUser :many
 SELECT * FROM "user" ORDER BY "name";

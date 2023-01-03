@@ -4,6 +4,12 @@ INSERT INTO "group" ("name") VALUES ($1) RETURNING *;
 -- name: GetGroup :one
 SELECT * FROM "group" WHERE "id" = $1 LIMIT 1;
 
+-- name: FindGroup :many
+SELECT * FROM "group" WHERE "name" LIKE $1 ORDER BY "name";
+
+-- name: FindGroupPage :many
+SELECT * FROM "group" WHERE "name" LIKE $1 ORDER BY "name" LIMIT $2 OFFSET $3;
+
 -- name: ListGroup :many
 SELECT * FROM "group" ORDER BY "name";
 

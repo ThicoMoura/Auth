@@ -10,8 +10,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewUser(t *testing.T) *db.User {
+func NewUser(t *testing.T, ID uuid.UUID) *db.User {
 	arg := &db.NewUserParams{
+		Group: ID,
 		Email: util.RandomString(11),
 		Name:  util.RandomString(10),
 		Pass:  util.RandomString(10),
@@ -22,12 +23,12 @@ func NewUser(t *testing.T) *db.User {
 	require.NoError(t, err)
 	require.NotEmpty(t, user)
 
+	require.NotEmpty(t, user.ID)
+	require.Equal(t, arg.Group, user.Group)
 	require.Equal(t, arg.Email, user.Email)
 	require.Equal(t, arg.Name, user.Name)
 	require.Equal(t, arg.Pass, user.Pass)
 	require.Equal(t, true, user.Active)
-
-	require.NotZero(t, user.ID)
 
 	return user
 }
@@ -41,90 +42,148 @@ func DeleteUser(t *testing.T, ID uuid.UUID) *db.User {
 	return user
 }
 
-func TestCreateUsers(t *testing.T) {
-	DeleteUser(t, NewUser(t).ID)
+func TestNewUsers(t *testing.T) {
+	user := NewUser(t, NewGroup(t).ID)
+	DeleteUser(t, user.ID)
+	DeleteGroup(t, user.Group)
 }
 
-// func TestGetUser(t *testing.T) {
-// 	user1 := createRandomUser(t)
-// 	user2, err := testQueries.GetUser(context.Background(), db, user1.ID)
+func TestGetUser(t *testing.T) {
+	user := NewUser(t, NewGroup(t).ID)
 
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
+	res, err := testQueries.GetUser(context.Background(), &db.GetUserParams{
+		ID: user.ID,
+	})
 
-// 	require.Equal(t, user1.Cpf, user2.Cpf)
-// 	require.Equal(t, user1.Name, user2.Name)
-// 	require.Equal(t, user1.Pass, user2.Pass)
-// 	require.Equal(t, user1.Active, user2.Active)
-// }
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+	require.Equal(t, user, res)
 
-// func TestGetUserByCPF(t *testing.T) {
-// 	user1 := createRandomUser(t)
-// 	user2, err := testQueries.GetUserByCPF(context.Background(), db, user1.Cpf)
+	res, err = testQueries.GetUser(context.Background(), &db.GetUserParams{
+		Email: user.Email,
+	})
 
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+	require.Equal(t, user, res)
 
-// 	require.Equal(t, user1.Cpf, user2.Cpf)
-// 	require.Equal(t, user1.Name, user2.Name)
-// 	require.Equal(t, user1.Pass, user2.Pass)
-// 	require.Equal(t, user1.Active, user2.Active)
-// }
+	DeleteUser(t, user.ID)
+	DeleteGroup(t, user.Group)
+}
 
-// func TestUpdateUserName(t *testing.T) {
-// 	user1 := createRandomUser(t)
-// 	arg := &UpdateUserParams{
-// 		ID:   user1.ID,
-// 		Name: util.RandomString(10),
-// 	}
+func TestFindUser(t *testing.T) {
+	group := NewGroup(t)
 
-// 	user2, err := testQueries.UpdateUser(context.Background(), db, arg)
+	name := 0
+	for i := 0; i < 10; i++ {
+		user := NewUser(t, group.ID)
+		if user.Name[0:1] == "a" {
+			name++
+		}
+	}
 
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
+	users, err := testQueries.FindUser(context.Background(), &db.FindUserParams{
+		Name: "a%",
+	})
 
-// 	require.Equal(t, user1.ID, user2.ID)
-// 	require.Equal(t, user1.Cpf, user2.Cpf)
-// 	require.Equal(t, arg.Name, user2.Name)
-// 	require.Equal(t, user1.Pass, user2.Pass)
-// 	require.Equal(t, user1.Active, user2.Active)
-// }
+	require.NoError(t, err)
+	require.Len(t, users, name)
 
-// func TestUpdateUserPass(t *testing.T) {
-// 	user1 := createRandomUser(t)
-// 	arg := &UpdateUserPassParams{
-// 		ID:   user1.ID,
-// 		Pass: util.RandomString(10),
-// 	}
+	for _, user := range users {
+		require.NotEmpty(t, user)
+	}
 
-// 	user2, err := testQueries.UpdateUserPass(context.Background(), db, arg)
+	users, err = testQueries.FindUser(context.Background(), &db.FindUserParams{
+		Group: group.ID,
+		Name:  "a%",
+	})
 
-// 	require.NoError(t, err)
-// 	require.NotEmpty(t, user2)
+	require.NoError(t, err)
+	require.Len(t, users, 10)
 
-// 	require.Equal(t, user1.ID, user2.ID)
-// 	require.Equal(t, user1.Cpf, user2.Cpf)
-// 	require.Equal(t, user1.Name, user2.Name)
-// 	require.Equal(t, arg.Pass, user2.Pass)
-// 	require.Equal(t, user1.Active, user2.Active)
-// }
+	for _, user := range users {
+		require.NotEmpty(t, user)
+	}
 
-// func TestListUser(t *testing.T) {
-// 	for i := 0; i < 10; i++ {
-// 		createRandomUser(t)
-// 	}
+	users, err = testQueries.FindUser(context.Background(), &db.FindUserParams{
+		Group: group.ID,
+	})
 
-// 	arg := &ListUserPageParams{
-// 		Limit:  5,
-// 		Offset: 5,
-// 	}
+	require.NoError(t, err)
+	require.Len(t, users, 10)
 
-// 	list, err := testQueries.ListUserPage(context.Background(), db, arg)
+	for _, user := range users {
+		require.NotEmpty(t, user)
+		DeleteUser(t, user.ID)
+	}
 
-// 	require.NoError(t, err)
-// 	require.Len(t, list, 5)
+	DeleteGroup(t, group.ID)
+}
 
-// 	for _, user := range list {
-// 		require.NotEmpty(t, user)
-// 	}
-// }
+func TestListUser(t *testing.T) {
+	for i := 0; i < 10; i++ {
+		NewUser(t, NewGroup(t).ID)
+	}
+
+	list, err := testQueries.ListUserPage(context.Background(), &db.ListUserPageParams{
+		Limit:  5,
+		Offset: 5,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, list, 5)
+
+	for _, user := range list {
+		require.NotEmpty(t, user)
+	}
+
+	list, err = testQueries.ListUser(context.Background())
+
+	require.NoError(t, err)
+	require.Len(t, list, 10)
+
+	for _, user := range list {
+		require.NotEmpty(t, user)
+		DeleteUser(t, user.ID)
+		DeleteGroup(t, user.Group)
+	}
+}
+
+func TestUpdateUser(t *testing.T) {
+	user := NewUser(t, NewGroup(t).ID)
+	arg := &db.UpdateUserParams{
+		ID:     user.ID,
+		Name:   util.RandomString(10),
+		Active: util.RandomBool(),
+	}
+
+	res, err := testQueries.UpdateUser(context.Background(), arg)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+
+	require.Equal(t, user.ID, res.ID)
+	require.Equal(t, user.Email, res.Email)
+	require.Equal(t, arg.Name, res.Name)
+	require.Equal(t, user.Pass, res.Pass)
+	require.Equal(t, arg.Active, res.Active)
+
+	argPass := &db.UpdateUserPassParams{
+		ID:   user.ID,
+		Pass: util.RandomString(10),
+	}
+
+	res, err = testQueries.UpdateUserPass(context.Background(), argPass)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, res)
+
+	require.Equal(t, user.ID, res.ID)
+	require.Equal(t, user.Email, res.Email)
+	require.Equal(t, arg.Name, res.Name)
+	require.Equal(t, argPass.Pass, res.Pass)
+	require.Equal(t, arg.Active, res.Active)
+
+	DeleteUser(t, user.ID)
+	DeleteGroup(t, user.Group)
+}

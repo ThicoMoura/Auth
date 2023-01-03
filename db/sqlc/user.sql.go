@@ -29,48 +29,17 @@ func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) (*User, error) {
 	return &i, err
 }
 
-const GetUser = `-- name: GetUser :one
-SELECT id, "group", email, name, pass, active FROM "user" WHERE "id" = $1 LIMIT 1
+const FindUser = `-- name: FindUser :many
+SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 OR "name" LIKE $2 ORDER BY "name"
 `
 
-func (q *Queries) GetUser(ctx context.Context, id uuid.UUID) (*User, error) {
-	row := q.db.QueryRow(ctx, GetUser, id)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Group,
-		&i.Email,
-		&i.Name,
-		&i.Pass,
-		&i.Active,
-	)
-	return &i, err
+type FindUserParams struct {
+	Group uuid.UUID `db:"group" json:"group"`
+	Name  string    `db:"name" json:"name"`
 }
 
-const GetUserByCPF = `-- name: GetUserByCPF :one
-SELECT id, "group", email, name, pass, active FROM "user" WHERE "email" = $1 LIMIT 1
-`
-
-func (q *Queries) GetUserByCPF(ctx context.Context, email string) (*User, error) {
-	row := q.db.QueryRow(ctx, GetUserByCPF, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Group,
-		&i.Email,
-		&i.Name,
-		&i.Pass,
-		&i.Active,
-	)
-	return &i, err
-}
-
-const GetUserByGroup = `-- name: GetUserByGroup :many
-SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name"
-`
-
-func (q *Queries) GetUserByGroup(ctx context.Context, group uuid.UUID) ([]*User, error) {
-	rows, err := q.db.Query(ctx, GetUserByGroup, group)
+func (q *Queries) FindUser(ctx context.Context, arg *FindUserParams) ([]*User, error) {
+	rows, err := q.db.Query(ctx, FindUser, arg.Group, arg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -96,18 +65,24 @@ func (q *Queries) GetUserByGroup(ctx context.Context, group uuid.UUID) ([]*User,
 	return items, nil
 }
 
-const GetUserByGroupPage = `-- name: GetUserByGroupPage :many
-SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 ORDER BY "name" LIMIT $2 OFFSET $3
+const FindUserPage = `-- name: FindUserPage :many
+SELECT id, "group", email, name, pass, active FROM  "user" WHERE "group" = $1 OR "name" LIKE $2 ORDER BY "name" LIMIT $3 OFFSET $4
 `
 
-type GetUserByGroupPageParams struct {
+type FindUserPageParams struct {
 	Group  uuid.UUID `db:"group" json:"group"`
+	Name   string    `db:"name" json:"name"`
 	Limit  int32     `db:"limit" json:"limit"`
 	Offset int32     `db:"offset" json:"offset"`
 }
 
-func (q *Queries) GetUserByGroupPage(ctx context.Context, arg *GetUserByGroupPageParams) ([]*User, error) {
-	rows, err := q.db.Query(ctx, GetUserByGroupPage, arg.Group, arg.Limit, arg.Offset)
+func (q *Queries) FindUserPage(ctx context.Context, arg *FindUserPageParams) ([]*User, error) {
+	rows, err := q.db.Query(ctx, FindUserPage,
+		arg.Group,
+		arg.Name,
+		arg.Limit,
+		arg.Offset,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -131,6 +106,29 @@ func (q *Queries) GetUserByGroupPage(ctx context.Context, arg *GetUserByGroupPag
 		return nil, err
 	}
 	return items, nil
+}
+
+const GetUser = `-- name: GetUser :one
+SELECT id, "group", email, name, pass, active FROM "user" WHERE "id" = $1 OR "email" = $2 LIMIT 1
+`
+
+type GetUserParams struct {
+	ID    uuid.UUID `db:"id" json:"id"`
+	Email string    `db:"email" json:"email"`
+}
+
+func (q *Queries) GetUser(ctx context.Context, arg *GetUserParams) (*User, error) {
+	row := q.db.QueryRow(ctx, GetUser, arg.ID, arg.Email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Group,
+		&i.Email,
+		&i.Name,
+		&i.Pass,
+		&i.Active,
+	)
+	return &i, err
 }
 
 const ListUser = `-- name: ListUser :many
