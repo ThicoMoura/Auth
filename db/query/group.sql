@@ -17,7 +17,10 @@ SELECT * FROM "group" ORDER BY "name";
 SELECT * FROM "group" ORDER BY "name" LIMIT $1 OFFSET $2;
 
 -- name: UpdateGroup :one
-UPDATE "group" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING *;
+UPDATE "group" SET "name" = COALESCE(NULLIF(@Name, ''), "name") WHERE "id" = $1 RETURNING *;
+
+-- name: UpdateGroupActive :one
+UPDATE "group" SET "active" = $2 WHERE "id" = $1 RETURNING *;
 
 -- name: DeleteGroup :one
 DELETE FROM "group" WHERE "id" = $1 RETURNING *;

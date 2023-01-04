@@ -12,18 +12,23 @@ import (
 )
 
 const DeleteSystem = `-- name: DeleteSystem :one
-DELETE FROM "system" WHERE "id" = $1 RETURNING id, name, active
+DELETE FROM "system" WHERE "id" = $1 RETURNING id, name, tables, active
 `
 
 func (q *Queries) DeleteSystem(ctx context.Context, id uuid.UUID) (*System, error) {
 	row := q.db.QueryRow(ctx, DeleteSystem, id)
 	var i System
-	err := row.Scan(&i.ID, &i.Name, &i.Active)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Tables,
+		&i.Active,
+	)
 	return &i, err
 }
 
 const FindSystem = `-- name: FindSystem :many
-SELECT id, name, active FROM "system" WHERE "name" LIKE $1 ORDER BY "name"
+SELECT id, name, tables, active FROM "system" WHERE "name" LIKE $1 ORDER BY "name"
 `
 
 func (q *Queries) FindSystem(ctx context.Context, name string) ([]*System, error) {
@@ -35,7 +40,12 @@ func (q *Queries) FindSystem(ctx context.Context, name string) ([]*System, error
 	items := []*System{}
 	for rows.Next() {
 		var i System
-		if err := rows.Scan(&i.ID, &i.Name, &i.Active); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tables,
+			&i.Active,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -47,7 +57,7 @@ func (q *Queries) FindSystem(ctx context.Context, name string) ([]*System, error
 }
 
 const FindSystemPage = `-- name: FindSystemPage :many
-SELECT id, name, active FROM "system" WHERE "name" LIKE $1 ORDER BY "name" LIMIT $2 OFFSET $3
+SELECT id, name, tables, active FROM "system" WHERE "name" LIKE $1 ORDER BY "name" LIMIT $2 OFFSET $3
 `
 
 type FindSystemPageParams struct {
@@ -65,7 +75,12 @@ func (q *Queries) FindSystemPage(ctx context.Context, arg *FindSystemPageParams)
 	items := []*System{}
 	for rows.Next() {
 		var i System
-		if err := rows.Scan(&i.ID, &i.Name, &i.Active); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tables,
+			&i.Active,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -77,18 +92,23 @@ func (q *Queries) FindSystemPage(ctx context.Context, arg *FindSystemPageParams)
 }
 
 const GetSystem = `-- name: GetSystem :one
-SELECT id, name, active FROM "system" WHERE "id" = $1 LIMIT 1
+SELECT id, name, tables, active FROM "system" WHERE "id" = $1 LIMIT 1
 `
 
 func (q *Queries) GetSystem(ctx context.Context, id uuid.UUID) (*System, error) {
 	row := q.db.QueryRow(ctx, GetSystem, id)
 	var i System
-	err := row.Scan(&i.ID, &i.Name, &i.Active)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Tables,
+		&i.Active,
+	)
 	return &i, err
 }
 
 const ListSystem = `-- name: ListSystem :many
-SELECT id, name, active FROM "system" ORDER BY "name"
+SELECT id, name, tables, active FROM "system" ORDER BY "name"
 `
 
 func (q *Queries) ListSystem(ctx context.Context) ([]*System, error) {
@@ -100,7 +120,12 @@ func (q *Queries) ListSystem(ctx context.Context) ([]*System, error) {
 	items := []*System{}
 	for rows.Next() {
 		var i System
-		if err := rows.Scan(&i.ID, &i.Name, &i.Active); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tables,
+			&i.Active,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -112,7 +137,7 @@ func (q *Queries) ListSystem(ctx context.Context) ([]*System, error) {
 }
 
 const ListSystemPage = `-- name: ListSystemPage :many
-SELECT id, name, active FROM "system" ORDER BY "name" LIMIT $1 OFFSET $2
+SELECT id, name, tables, active FROM "system" ORDER BY "name" LIMIT $1 OFFSET $2
 `
 
 type ListSystemPageParams struct {
@@ -129,7 +154,12 @@ func (q *Queries) ListSystemPage(ctx context.Context, arg *ListSystemPageParams)
 	items := []*System{}
 	for rows.Next() {
 		var i System
-		if err := rows.Scan(&i.ID, &i.Name, &i.Active); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Tables,
+			&i.Active,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -141,29 +171,65 @@ func (q *Queries) ListSystemPage(ctx context.Context, arg *ListSystemPageParams)
 }
 
 const NewSystem = `-- name: NewSystem :one
-INSERT INTO "system" ("name") VALUES ($1) RETURNING id, name, active
+INSERT INTO "system" ("name", "tables") VALUES ($1, $2) RETURNING id, name, tables, active
 `
 
-func (q *Queries) NewSystem(ctx context.Context, name string) (*System, error) {
-	row := q.db.QueryRow(ctx, NewSystem, name)
+type NewSystemParams struct {
+	Name   string   `db:"name" json:"name"`
+	Tables []string `db:"tables" json:"tables"`
+}
+
+func (q *Queries) NewSystem(ctx context.Context, arg *NewSystemParams) (*System, error) {
+	row := q.db.QueryRow(ctx, NewSystem, arg.Name, arg.Tables)
 	var i System
-	err := row.Scan(&i.ID, &i.Name, &i.Active)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Tables,
+		&i.Active,
+	)
+	return &i, err
+}
+
+const UpdateActiveSystem = `-- name: UpdateActiveSystem :one
+UPDATE "system" SET "active" = $2 WHERE "id" = $1 RETURNING id, name, tables, active
+`
+
+type UpdateActiveSystemParams struct {
+	ID     uuid.UUID `db:"id" json:"id"`
+	Active bool      `db:"active" json:"active"`
+}
+
+func (q *Queries) UpdateActiveSystem(ctx context.Context, arg *UpdateActiveSystemParams) (*System, error) {
+	row := q.db.QueryRow(ctx, UpdateActiveSystem, arg.ID, arg.Active)
+	var i System
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Tables,
+		&i.Active,
+	)
 	return &i, err
 }
 
 const UpdateSystem = `-- name: UpdateSystem :one
-UPDATE "system" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING id, name, active
+UPDATE "system" SET "name" = COALESCE(NULLIF($3, ''), "name"), "tables" = COALESCE($2, "tables") WHERE "id" = $1 RETURNING id, name, tables, active
 `
 
 type UpdateSystemParams struct {
-	ID     uuid.UUID `db:"id" json:"id"`
-	Name   string    `db:"name" json:"name"`
-	Active bool      `db:"active" json:"active"`
+	ID     uuid.UUID   `db:"id" json:"id"`
+	Tables []string    `db:"tables" json:"tables"`
+	Name   interface{} `db:"name" json:"name"`
 }
 
 func (q *Queries) UpdateSystem(ctx context.Context, arg *UpdateSystemParams) (*System, error) {
-	row := q.db.QueryRow(ctx, UpdateSystem, arg.ID, arg.Name, arg.Active)
+	row := q.db.QueryRow(ctx, UpdateSystem, arg.ID, arg.Tables, arg.Name)
 	var i System
-	err := row.Scan(&i.ID, &i.Name, &i.Active)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Tables,
+		&i.Active,
+	)
 	return &i, err
 }

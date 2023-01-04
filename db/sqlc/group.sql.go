@@ -152,17 +152,32 @@ func (q *Queries) NewGroup(ctx context.Context, name string) (*Group, error) {
 }
 
 const UpdateGroup = `-- name: UpdateGroup :one
-UPDATE "group" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING id, name, active
+UPDATE "group" SET "name" = COALESCE(NULLIF($2, ''), "name") WHERE "id" = $1 RETURNING id, name, active
 `
 
 type UpdateGroupParams struct {
-	ID     uuid.UUID `db:"id" json:"id"`
-	Name   string    `db:"name" json:"name"`
-	Active bool      `db:"active" json:"active"`
+	ID   uuid.UUID   `db:"id" json:"id"`
+	Name interface{} `db:"name" json:"name"`
 }
 
 func (q *Queries) UpdateGroup(ctx context.Context, arg *UpdateGroupParams) (*Group, error) {
-	row := q.db.QueryRow(ctx, UpdateGroup, arg.ID, arg.Name, arg.Active)
+	row := q.db.QueryRow(ctx, UpdateGroup, arg.ID, arg.Name)
+	var i Group
+	err := row.Scan(&i.ID, &i.Name, &i.Active)
+	return &i, err
+}
+
+const UpdateGroupActive = `-- name: UpdateGroupActive :one
+UPDATE "group" SET "active" = $2 WHERE "id" = $1 RETURNING id, name, active
+`
+
+type UpdateGroupActiveParams struct {
+	ID     uuid.UUID `db:"id" json:"id"`
+	Active bool      `db:"active" json:"active"`
+}
+
+func (q *Queries) UpdateGroupActive(ctx context.Context, arg *UpdateGroupActiveParams) (*Group, error) {
+	row := q.db.QueryRow(ctx, UpdateGroupActive, arg.ID, arg.Active)
 	var i Group
 	err := row.Scan(&i.ID, &i.Name, &i.Active)
 	return &i, err

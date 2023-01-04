@@ -1,4 +1,4 @@
-package db_test
+package repository_test
 
 import (
 	"context"
@@ -6,13 +6,13 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ThicoMoura/Auth/db/repository"
 	db "github.com/ThicoMoura/Auth/db/sqlc"
 	"github.com/ThicoMoura/Auth/util"
-	"github.com/jackc/pgx/v4"
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-var testQueries *db.Queries
+var repo *repository.Repository
 
 func TestMain(m *testing.M) {
 	env, err := util.NewEnv("../../")
@@ -20,12 +20,12 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot load config file: ", err)
 	}
 
-	conn, err := pgx.Connect(context.Background(), env.Source)
+	conn, err := pgxpool.Connect(context.Background(), env.Source)
 	if err != nil {
-		log.Fatal("cannot conect to db: ", err)
+		log.Fatal("cannot load config file: ", err)
 	}
 
-	testQueries = db.New(conn)
+	repo = repository.NewRepository(db.NewStore(conn))
 
 	os.Exit(m.Run())
 }

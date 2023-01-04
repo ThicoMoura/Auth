@@ -13,7 +13,9 @@ import (
 func NewSystem(t *testing.T) *db.System {
 	name := util.RandomString(10)
 
-	system, err := testQueries.NewSystem(context.Background(), name)
+	system, err := testQueries.NewSystem(context.Background(), &db.NewSystemParams{
+		Name: name,
+	})
 
 	require.NoError(t, err)
 	require.NotEmpty(t, system)
@@ -128,9 +130,8 @@ func TestUpdateSystem(t *testing.T) {
 	system := NewSystem(t)
 
 	arg := db.UpdateSystemParams{
-		ID:     system.ID,
-		Name:   util.RandomString(10),
-		Active: util.RandomBool(),
+		ID:   system.ID,
+		Name: util.RandomString(10),
 	}
 
 	update, err := testQueries.UpdateSystem(context.Background(), &arg)
@@ -140,7 +141,7 @@ func TestUpdateSystem(t *testing.T) {
 
 	require.Equal(t, system.ID, update.ID)
 	require.Equal(t, arg.Name, update.Name)
-	require.Equal(t, arg.Active, update.Active)
+	require.Equal(t, system.Active, update.Active)
 
 	DeleteSystem(t, system.ID)
 }

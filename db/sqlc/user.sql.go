@@ -229,17 +229,17 @@ func (q *Queries) NewUser(ctx context.Context, arg *NewUserParams) (*User, error
 }
 
 const UpdateUser = `-- name: UpdateUser :one
-UPDATE "user" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
+UPDATE "user" SET "name" = COALESCE(NULLIF($2, ''), "name"), "pass" = COALESCE(NULLIF($3, ''), "pass") WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
 `
 
 type UpdateUserParams struct {
-	ID     uuid.UUID `db:"id" json:"id"`
-	Name   string    `db:"name" json:"name"`
-	Active bool      `db:"active" json:"active"`
+	ID   uuid.UUID   `db:"id" json:"id"`
+	Name interface{} `db:"name" json:"name"`
+	Pass interface{} `db:"pass" json:"pass"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error) {
-	row := q.db.QueryRow(ctx, UpdateUser, arg.ID, arg.Name, arg.Active)
+	row := q.db.QueryRow(ctx, UpdateUser, arg.ID, arg.Name, arg.Pass)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -252,17 +252,17 @@ func (q *Queries) UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User,
 	return &i, err
 }
 
-const UpdateUserPass = `-- name: UpdateUserPass :one
-UPDATE "user" SET "pass" = $2 WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
+const UpdateUserActive = `-- name: UpdateUserActive :one
+UPDATE "user" SET "active" = $2 WHERE "id" = $1 RETURNING id, "group", email, name, pass, active
 `
 
-type UpdateUserPassParams struct {
-	ID   uuid.UUID `db:"id" json:"id"`
-	Pass string    `db:"pass" json:"pass"`
+type UpdateUserActiveParams struct {
+	ID     uuid.UUID `db:"id" json:"id"`
+	Active bool      `db:"active" json:"active"`
 }
 
-func (q *Queries) UpdateUserPass(ctx context.Context, arg *UpdateUserPassParams) (*User, error) {
-	row := q.db.QueryRow(ctx, UpdateUserPass, arg.ID, arg.Pass)
+func (q *Queries) UpdateUserActive(ctx context.Context, arg *UpdateUserActiveParams) (*User, error) {
+	row := q.db.QueryRow(ctx, UpdateUserActive, arg.ID, arg.Active)
 	var i User
 	err := row.Scan(
 		&i.ID,

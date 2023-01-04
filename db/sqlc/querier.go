@@ -52,14 +52,16 @@ type Querier interface {
 	NewGroup(ctx context.Context, name string) (*Group, error)
 	NewGroupAccess(ctx context.Context, arg *NewGroupAccessParams) (*GroupAccess, error)
 	NewSession(ctx context.Context, arg *NewSessionParams) (*Session, error)
-	NewSystem(ctx context.Context, name string) (*System, error)
+	NewSystem(ctx context.Context, arg *NewSystemParams) (*System, error)
 	NewUser(ctx context.Context, arg *NewUserParams) (*User, error)
 	NewUserAccess(ctx context.Context, arg *NewUserAccessParams) (*UserAccess, error)
 	UpdateAccess(ctx context.Context, arg *UpdateAccessParams) (*Access, error)
+	UpdateActiveSystem(ctx context.Context, arg *UpdateActiveSystemParams) (*System, error)
 	UpdateGroup(ctx context.Context, arg *UpdateGroupParams) (*Group, error)
+	UpdateGroupActive(ctx context.Context, arg *UpdateGroupActiveParams) (*Group, error)
 	UpdateSystem(ctx context.Context, arg *UpdateSystemParams) (*System, error)
 	UpdateUser(ctx context.Context, arg *UpdateUserParams) (*User, error)
-	UpdateUserPass(ctx context.Context, arg *UpdateUserPassParams) (*User, error)
+	UpdateUserActive(ctx context.Context, arg *UpdateUserActiveParams) (*User, error)
 }
 
 var _ Querier = (*Queries)(nil)

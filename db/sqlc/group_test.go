@@ -128,9 +128,8 @@ func TestUpdateGroup(t *testing.T) {
 	group := NewGroup(t)
 
 	arg := db.UpdateGroupParams{
-		ID:     group.ID,
-		Name:   util.RandomString(10),
-		Active: util.RandomBool(),
+		ID:   group.ID,
+		Name: util.RandomString(10),
 	}
 
 	update, err := testQueries.UpdateGroup(context.Background(), &arg)
@@ -140,7 +139,7 @@ func TestUpdateGroup(t *testing.T) {
 
 	require.Equal(t, group.ID, update.ID)
 	require.Equal(t, arg.Name, update.Name)
-	require.Equal(t, arg.Active, update.Active)
+	require.Equal(t, group.Active, update.Active)
 
 	DeleteGroup(t, group.ID)
 }

@@ -17,10 +17,10 @@ SELECT * FROM "user" ORDER BY "name";
 SELECT * FROM "user" ORDER BY "name" LIMIT $1 OFFSET $2;
 
 -- name: UpdateUser :one
-UPDATE "user" SET "name" = $2, "active" = $3 WHERE "id" = $1 RETURNING *;
+UPDATE "user" SET "name" = COALESCE(NULLIF(@Name, ''), "name"), "pass" = COALESCE(NULLIF(@Pass, ''), "pass") WHERE "id" = $1 RETURNING *;
 
--- name: UpdateUserPass :one
-UPDATE "user" SET "pass" = $2 WHERE "id" = $1 RETURNING *;
+-- name: UpdateUserActive :one
+UPDATE "user" SET "active" = $2 WHERE "id" = $1 RETURNING *;
 
 -- name: DeleteUser :one
 DELETE FROM "user" WHERE "id" = $1 RETURNING *;

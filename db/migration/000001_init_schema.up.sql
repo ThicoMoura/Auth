@@ -1,6 +1,6 @@
 -- SQL dump generated using DBML (dbml-lang.org)
 -- Database: PostgreSQL
--- Generated at: 2023-01-02T19:00:16.024Z
+-- Generated at: 2023-01-04T12:10:44.914Z
 
 CREATE TABLE "group" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
@@ -20,6 +20,7 @@ CREATE TABLE "user" (
 CREATE TABLE "system" (
   "id" uuid PRIMARY KEY DEFAULT (gen_random_uuid()),
   "name" varchar NOT NULL,
+  "tables" varchar[],
   "active" bool NOT NULL DEFAULT true
 );
 

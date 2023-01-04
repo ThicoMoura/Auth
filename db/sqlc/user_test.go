@@ -152,9 +152,9 @@ func TestListUser(t *testing.T) {
 func TestUpdateUser(t *testing.T) {
 	user := NewUser(t, NewGroup(t).ID)
 	arg := &db.UpdateUserParams{
-		ID:     user.ID,
-		Name:   util.RandomString(10),
-		Active: util.RandomBool(),
+		ID:   user.ID,
+		Name: util.RandomString(10),
+		Pass: util.RandomString(10),
 	}
 
 	res, err := testQueries.UpdateUser(context.Background(), arg)
@@ -165,15 +165,15 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, user.ID, res.ID)
 	require.Equal(t, user.Email, res.Email)
 	require.Equal(t, arg.Name, res.Name)
-	require.Equal(t, user.Pass, res.Pass)
-	require.Equal(t, arg.Active, res.Active)
+	require.Equal(t, arg.Pass, res.Pass)
+	require.Equal(t, user.Active, res.Active)
 
-	argPass := &db.UpdateUserPassParams{
-		ID:   user.ID,
-		Pass: util.RandomString(10),
+	argActive := &db.UpdateUserActiveParams{
+		ID:     user.ID,
+		Active: util.RandomBool(),
 	}
 
-	res, err = testQueries.UpdateUserPass(context.Background(), argPass)
+	res, err = testQueries.UpdateUserActive(context.Background(), argActive)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, res)
@@ -181,8 +181,8 @@ func TestUpdateUser(t *testing.T) {
 	require.Equal(t, user.ID, res.ID)
 	require.Equal(t, user.Email, res.Email)
 	require.Equal(t, arg.Name, res.Name)
-	require.Equal(t, argPass.Pass, res.Pass)
-	require.Equal(t, arg.Active, res.Active)
+	require.Equal(t, arg.Pass, res.Pass)
+	require.Equal(t, argActive.Active, res.Active)
 
 	DeleteUser(t, user.ID)
 	DeleteGroup(t, user.Group)

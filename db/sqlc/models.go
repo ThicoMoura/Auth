@@ -41,6 +41,7 @@ type Session struct {
 type System struct {
 	ID     uuid.UUID `db:"id" json:"id"`
 	Name   string    `db:"name" json:"name"`
+	Tables []string  `db:"tables" json:"tables"`
 	Active bool      `db:"active" json:"active"`
 }
 

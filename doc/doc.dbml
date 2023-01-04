@@ -29,6 +29,7 @@ Table system as S {
   id uuid [pk, default: `gen_random_uuid()`]
   
   name varchar [not null]
+  tables varchar[]
   
   active bool [not null, default: true]
 }
