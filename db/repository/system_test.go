@@ -10,10 +10,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewSystem(t *testing.T) {
-	rSystem := repo.Table("system")
-
-	system, err := rSystem.New(context.Background(), model.New(map[string]interface{}{
+func NewSystem(t *testing.T) model.Value {
+	system, err := repo.Table("system").New(context.Background(), model.New(map[string]interface{}{
 		"Name":   util.RandomString(10),
 		"Tables": []string{},
 	}))
@@ -21,26 +19,28 @@ func TestNewSystem(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, system)
 
-	system, err = rSystem.Delete(context.Background(), model.New(map[string]interface{}{
-		"ID": system.Get("ID").(uuid.UUID),
+	return system
+}
+
+func DeleteSystem(t *testing.T, ID uuid.UUID) model.Value {
+	system, err := repo.Table("system").Delete(context.Background(), model.New(map[string]interface{}{
+		"ID": ID,
 	}))
 
 	require.NoError(t, err)
 	require.NotEmpty(t, system)
+
+	return system
+}
+
+func TestNewSystem(t *testing.T) {
+	DeleteSystem(t, NewSystem(t).Get("ID").(uuid.UUID))
 }
 
 func TestGetSystem(t *testing.T) {
-	rSystem := repo.Table("system")
+	system := NewSystem(t)
 
-	system, err := rSystem.New(context.Background(), model.New(map[string]interface{}{
-		"Name":   util.RandomString(10),
-		"Tables": []string{},
-	}))
-
-	require.NoError(t, err)
-	require.NotEmpty(t, system)
-
-	res, err := rSystem.Get(context.Background(), model.New(map[string]interface{}{
+	res, err := repo.Table("system").Get(context.Background(), model.New(map[string]interface{}{
 		"ID": system.Get("ID"),
 	}))
 
@@ -48,29 +48,15 @@ func TestGetSystem(t *testing.T) {
 	require.NotEmpty(t, res)
 	require.Equal(t, system, res)
 
-	system, err = rSystem.Delete(context.Background(), model.New(map[string]interface{}{
-		"ID": system.Get("ID").(uuid.UUID),
-	}))
-
-	require.NoError(t, err)
-	require.NotEmpty(t, system)
+	DeleteSystem(t, system.Get("ID").(uuid.UUID))
 }
 
 func TestFindSystem(t *testing.T) {
-	rSystem := repo.Table("system")
-
 	var systems []model.Value
-
 	name := 0
 
 	for i := 0; i < 10; i++ {
-		system, err := rSystem.New(context.Background(), model.New(map[string]interface{}{
-			"Name":   util.RandomString(10),
-			"Tables": []string{},
-		}))
-
-		require.NoError(t, err)
-		require.NotEmpty(t, system)
+		system := NewSystem(t)
 
 		if system.Get("Name").(string)[0:1] == "a" {
 			name++
@@ -79,7 +65,7 @@ func TestFindSystem(t *testing.T) {
 		systems = append(systems, system)
 	}
 
-	res, err := rSystem.Find(context.Background(), model.New(map[string]interface{}{
+	res, err := repo.Table("system").Find(context.Background(), model.New(map[string]interface{}{
 		"Name": "a%",
 	}))
 
@@ -91,29 +77,16 @@ func TestFindSystem(t *testing.T) {
 	}
 
 	for _, system := range systems {
-		res, err := rSystem.Delete(context.Background(), model.New(map[string]interface{}{
-			"ID": system.Get("ID").(uuid.UUID),
-		}))
-
-		require.NoError(t, err)
-		require.NotEmpty(t, res)
+		DeleteSystem(t, system.Get("ID").(uuid.UUID))
 	}
 }
 
 func TestListSystem(t *testing.T) {
-	rSystem := repo.Table("system")
-
 	for i := 0; i < 10; i++ {
-		system, err := rSystem.New(context.Background(), model.New(map[string]interface{}{
-			"Name":   util.RandomString(10),
-			"Tables": []string{},
-		}))
-
-		require.NoError(t, err)
-		require.NotEmpty(t, system)
+		NewSystem(t)
 	}
 
-	systems, err := rSystem.List(context.Background(), model.New(map[string]interface{}{
+	systems, err := repo.Table("system").List(context.Background(), model.New(map[string]interface{}{
 		"Limit":  int32(5),
 		"Offset": int32(5),
 	}))
@@ -125,7 +98,7 @@ func TestListSystem(t *testing.T) {
 		require.NotEmpty(t, system)
 	}
 
-	systems, err = rSystem.List(context.Background(), model.New(nil))
+	systems, err = repo.Table("system").List(context.Background(), model.New(nil))
 
 	require.NoError(t, err)
 	require.Len(t, systems, 10)
@@ -133,25 +106,12 @@ func TestListSystem(t *testing.T) {
 	for _, system := range systems {
 		require.NotEmpty(t, system)
 
-		res, err := rSystem.Delete(context.Background(), model.New(map[string]interface{}{
-			"ID": system.Get("ID").(uuid.UUID),
-		}))
-
-		require.NoError(t, err)
-		require.NotEmpty(t, res)
+		DeleteSystem(t, system.Get("ID").(uuid.UUID))
 	}
 }
 
 func TestUpdateSystem(t *testing.T) {
-	rSystem := repo.Table("system")
-
-	system, err := rSystem.New(context.Background(), model.New(map[string]interface{}{
-		"Name":   util.RandomString(10),
-		"Tables": []string{},
-	}))
-
-	require.NoError(t, err)
-	require.NotEmpty(t, system)
+	system := NewSystem(t)
 
 	arg := model.New(map[string]interface{}{
 		"ID":     system.Get("ID"),
@@ -159,7 +119,7 @@ func TestUpdateSystem(t *testing.T) {
 		"Active": util.RandomBool(),
 	})
 
-	updated, err := rSystem.Update(context.Background(), arg)
+	updated, err := repo.Table("system").Update(context.Background(), arg)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, system)
@@ -169,10 +129,5 @@ func TestUpdateSystem(t *testing.T) {
 	require.Equal(t, arg.Get("Tables"), updated.Get("Tables"))
 	require.Equal(t, arg.Get("Active"), updated.Get("Active"))
 
-	system, err = rSystem.Delete(context.Background(), model.New(map[string]interface{}{
-		"ID": system.Get("ID").(uuid.UUID),
-	}))
-
-	require.NoError(t, err)
-	require.NotEmpty(t, system)
+	DeleteSystem(t, system.Get("ID").(uuid.UUID))
 }

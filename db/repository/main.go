@@ -28,8 +28,16 @@ func NewRepository(store *db.Store) *Repository {
 
 func (repo Repository) Table(name string) IRepository {
 	switch name {
+	case "access":
+		return newAccess(repo.store)
+	case "group":
+		return newGroup(repo.store)
+	case "session":
+		return newSession(repo.store)
 	case "system":
 		return newSystem(repo.store)
+	case "user":
+		return newUser(repo.store)
 	default:
 		return nil
 	}
