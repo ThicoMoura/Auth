@@ -6,12 +6,14 @@ import (
 
 	"github.com/ThicoMoura/Auth/api/service"
 	"github.com/ThicoMoura/Auth/db/repository"
+	"github.com/ThicoMoura/Auth/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
 	store  *repository.Repository
+	token  token.Maker
 	router *gin.Engine
 }
 
@@ -32,7 +34,22 @@ func (server Server) setup() {
 	NewLogin(api, service.NewLogin(map[string]repository.IRepository{
 		"user":    server.store.Table("user"),
 		"session": server.store.Table("session"),
-	})).Setup()
+	}), server.token, time.Hour).Setup()
+
+	auth := api.Group("/")
+	md := NewMiddleware(server.token, nil)
+
+	auth.Use(md.Authentication())
+
+	auth.GET("/profile", func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"Code": http.StatusOK,
+			"Message": map[string]string{
+				"Name":  "PIPI",
+				"Email": "POPO",
+			},
+		})
+	})
 }
 
 func (server Server) Start(addr string) *http.Server {
@@ -43,9 +60,10 @@ func (server Server) Start(addr string) *http.Server {
 	}
 }
 
-func NewServer(store *repository.Repository) *Server {
+func NewServer(store *repository.Repository, token token.Maker) *Server {
 	return &Server{
 		store:  store,
+		token:  token,
 		router: gin.Default(),
 	}
 }

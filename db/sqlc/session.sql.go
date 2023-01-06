@@ -152,10 +152,11 @@ func (q *Queries) ListSessionPage(ctx context.Context, arg *ListSessionPageParam
 }
 
 const NewSession = `-- name: NewSession :one
-INSERT INTO "session" ("user", "token", "ip", "agent", "expires_at") VALUES ($1, $2, $3, $4, $5) RETURNING id, "user", token, ip, agent, created_at, expires_at
+INSERT INTO "session" ("id", "user", "token", "ip", "agent", "expires_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, "user", token, ip, agent, created_at, expires_at
 `
 
 type NewSessionParams struct {
+	ID        uuid.UUID `db:"id" json:"id"`
 	User      uuid.UUID `db:"user" json:"user"`
 	Token     string    `db:"token" json:"token"`
 	Ip        string    `db:"ip" json:"ip"`
@@ -165,6 +166,7 @@ type NewSessionParams struct {
 
 func (q *Queries) NewSession(ctx context.Context, arg *NewSessionParams) (*Session, error) {
 	row := q.db.QueryRow(ctx, NewSession,
+		arg.ID,
 		arg.User,
 		arg.Token,
 		arg.Ip,

@@ -13,6 +13,7 @@ import (
 
 func NewSession(t *testing.T, ID uuid.UUID) model.Value {
 	session, err := repo.Table("session").New(context.Background(), model.New(map[string]interface{}{
+		"ID":        uuid.New(),
 		"User":      ID,
 		"Token":     util.RandomString(10),
 		"Ip":        util.RandomString(10),

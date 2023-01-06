@@ -1,5 +1,5 @@
 -- name: NewSession :one
-INSERT INTO "session" ("user", "token", "ip", "agent", "expires_at") VALUES ($1, $2, $3, $4, $5) RETURNING *;
+INSERT INTO "session" ("id", "user", "token", "ip", "agent", "expires_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
 
 -- name: GetSession :one
 SELECT * FROM "session" WHERE "id" = $1 LIMIT 1;

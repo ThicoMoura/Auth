@@ -13,6 +13,7 @@ import (
 
 func NewSession(t *testing.T, ID uuid.UUID) *db.Session {
 	arg := &db.NewSessionParams{
+		ID:        uuid.New(),
 		User:      ID,
 		Token:     util.RandomString(10),
 		Ip:        util.RandomString(10),

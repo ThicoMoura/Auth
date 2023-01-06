@@ -7,6 +7,7 @@ import (
 type env struct {
 	Source  string `mapstructure:"DBSOURCE"`
 	Migrate string `mapstructure:"MIGRATION_URL"`
+	Key     string `mapstructure:"TOKEN_KEY"`
 	GinMode string `mapstructure:"GIN_MODE"`
 }
 

@@ -8,9 +8,8 @@ import (
 )
 
 var (
-	ErrInvalidToken  = errors.New("token is invalid")
-	ErrExpiredToken  = errors.New("token has expired")
-	ErrInvalidAccess = errors.New("access payload is invalid")
+	ErrInvalidToken = errors.New("token is invalid")
+	ErrExpiredToken = errors.New("token has expired")
 )
 
 type Payload struct {
@@ -20,13 +19,18 @@ type Payload struct {
 	ExpiresAt time.Time `json:"ExpiresAt"`
 }
 
-func NewPayload(email string, duration time.Duration) *Payload {
+func NewPayload(email string, duration time.Duration) (*Payload, error) {
+	ID, err := uuid.NewRandom()
+	if err != nil {
+		return nil, err
+	}
+
 	return &Payload{
-		ID:        uuid.New(),
+		ID:        ID,
 		Email:     email,
 		IssuedAt:  time.Now(),
 		ExpiresAt: time.Now().Add(duration),
-	}
+	}, nil
 }
 
 func (payload Payload) Valid() error {

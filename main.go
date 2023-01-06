@@ -11,6 +11,7 @@ import (
 	"github.com/ThicoMoura/Auth/api/controller"
 	"github.com/ThicoMoura/Auth/db/repository"
 	db "github.com/ThicoMoura/Auth/db/sqlc"
+	"github.com/ThicoMoura/Auth/token"
 	"github.com/ThicoMoura/Auth/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -34,6 +35,11 @@ func main() {
 		log.Fatal("cannot migrate up: ", err)
 	}
 
+	token, err := token.NewPaseto(env.Key)
+	if err != nil {
+		log.Fatal("cannot create token maker: ", err)
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
@@ -45,10 +51,10 @@ func main() {
 	gin.SetMode(env.GinMode)
 
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		log.Printf("endpoint %v %v\n", httpMethod, absolutePath)
+		log.Printf("|endpoint: \"%v\" -> %v|\n", httpMethod, absolutePath)
 	}
 
-	server := controller.NewServer(repository.NewRepository(db.NewStore(conn)))
+	server := controller.NewServer(repository.NewRepository(db.NewStore(conn)), token)
 
 	srv := server.Start("0.0.0.0:80")
 

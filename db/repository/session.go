@@ -22,6 +22,7 @@ func newSession(store *db.Store) *session {
 
 func (repository session) New(ctx context.Context, req model.Value) (model.Value, error) {
 	session, err := repository.store.NewSession(ctx, &db.NewSessionParams{
+		ID:        req.Get("ID").(uuid.UUID),
 		User:      req.Get("User").(uuid.UUID),
 		Token:     req.Get("Token").(string),
 		Ip:        req.Get("Ip").(string),

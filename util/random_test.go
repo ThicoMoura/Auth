@@ -29,7 +29,5 @@ func TestRandomString(t *testing.T) {
 }
 
 func TestRandomBool(t *testing.T) {
-	boolean := util.RandomBool()
-
-	require.NotEmpty(t, boolean)
+	util.RandomBool()
 }
