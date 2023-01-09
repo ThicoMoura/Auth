@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -21,23 +21,28 @@ import (
 )
 
 func main() {
+	loc, _ := time.LoadLocation("America/Campo_Grande")
+
+	Lerror := util.NewLogs(os.Stderr, util.Lerror, loc)
+	Linfo := util.NewLogs(os.Stderr, util.Linfo, loc)
+
 	env, err := util.NewEnv("./")
 	if err != nil {
-		log.Fatal("cannot load config file: ", err)
+		Lerror.Fatal(err)
 	}
 
 	m, err := migrate.New(env.Migrate, env.Source)
 	if err != nil {
-		log.Fatal("cannot create a migrate instace: ", err)
+		Lerror.Fatal(err)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal("cannot migrate up: ", err)
+		Lerror.Fatal(err)
 	}
 
 	token, err := token.NewPaseto(env.Key)
 	if err != nil {
-		log.Fatal("cannot create token maker: ", err)
+		Lerror.Fatal(err)
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
@@ -45,13 +50,23 @@ func main() {
 
 	conn, err := pgxpool.Connect(ctx, env.Source)
 	if err != nil {
-		log.Fatal("cannot connect to database: ", err)
+		Lerror.Fatal(err)
 	}
 
 	gin.SetMode(env.GinMode)
 
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		log.Printf("|endpoint: \"%v\" -> %v|\n", httpMethod, absolutePath)
+		switch httpMethod {
+		case "POST":
+			Linfo.Printf("endpoint: \"POST\"   ->  %v\n", absolutePath)
+		case "GET":
+			Linfo.Printf("endpoint: \"GET\"    ->  %v\n", absolutePath)
+		case "PUT":
+			Linfo.Printf("endpoint: \"PUT\"    ->  %v\n", absolutePath)
+		case "DELETE":
+			Linfo.Printf("endpoint: \"DELETE\" ->  %v\n", absolutePath)
+		}
+
 	}
 
 	server := controller.NewServer(repository.NewRepository(db.NewStore(conn)), token)
@@ -60,21 +75,21 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s", err)
+			Lerror.Fatal(err)
 		}
 	}()
 
 	<-ctx.Done()
 
 	stop()
-	log.Println("shutting down gracefully, press Ctrl+C again to force")
+	Linfo.Println("shutting down gracefully, press Ctrl+C again to force")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown: ", err)
+		Lerror.Fatal(err)
 	}
 
-	log.Println("Server exiting")
+	Linfo.Println("Server exiting")
 }

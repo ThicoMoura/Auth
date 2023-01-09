@@ -9,6 +9,7 @@ type env struct {
 	Migrate string `mapstructure:"MIGRATION_URL"`
 	Key     string `mapstructure:"TOKEN_KEY"`
 	GinMode string `mapstructure:"GIN_MODE"`
+	Addr string `mapstructure:"ADDRESS"`
 }
 
 func NewEnv(path string) (env *env, err error) {

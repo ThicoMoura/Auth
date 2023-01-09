@@ -37,19 +37,14 @@ func (server Server) setup() {
 	}), server.token, time.Hour).Setup()
 
 	auth := api.Group("/")
-	md := NewMiddleware(server.token, nil)
 
-	auth.Use(md.Authentication())
+	auth.Use(NewMiddleware(server.token, nil).Authentication())
 
-	auth.GET("/profile", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"Code": http.StatusOK,
-			"Message": map[string]string{
-				"Name":  "PIPI",
-				"Email": "POPO",
-			},
-		})
-	})
+	NewAccess(auth.Group("/access"), service.NewAccess(server.store.Table("access"))).Setup()
+	NewGroup(auth.Group("/group"), service.NewGroup(server.store.Table("group"))).Setup()
+	NewSession(auth.Group("/session"), service.NewSession(server.store.Table("session"))).Setup()
+	NewSystem(auth.Group("/system"), service.NewSystem(server.store.Table("system"))).Setup()
+	NewUser(auth.Group("/user"), service.NewUser(server.store.Table("user"))).Setup()
 }
 
 func (server Server) Start(addr string) *http.Server {

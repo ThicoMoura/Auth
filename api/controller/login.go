@@ -21,7 +21,7 @@ type login struct {
 }
 
 func (controller login) Setup() {
-	controller.router.POST("/login", controller.login)
+	controller.router.POST("/login/", controller.login)
 }
 
 func (controller login) login(ctx *gin.Context) {
