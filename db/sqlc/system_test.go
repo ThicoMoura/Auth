@@ -44,6 +44,7 @@ func TestNewSystem(t *testing.T) {
 
 func TestGetSystem(t *testing.T) {
 	system := NewSystem(t)
+	defer DeleteSystem(t, system.ID)
 
 	res, err := testQueries.GetSystem(context.Background(), system.ID)
 
@@ -51,8 +52,6 @@ func TestGetSystem(t *testing.T) {
 	require.NotEmpty(t, res)
 
 	require.Equal(t, system, res)
-
-	DeleteSystem(t, system.ID)
 }
 
 func TestFindSystem(t *testing.T) {
@@ -128,6 +127,7 @@ func TestListSystem(t *testing.T) {
 
 func TestUpdateSystem(t *testing.T) {
 	system := NewSystem(t)
+	defer DeleteSystem(t, system.ID)
 
 	arg := db.UpdateSystemParams{
 		ID:   system.ID,
@@ -142,6 +142,4 @@ func TestUpdateSystem(t *testing.T) {
 	require.Equal(t, system.ID, update.ID)
 	require.Equal(t, arg.Name, update.Name)
 	require.Equal(t, system.Active, update.Active)
-
-	DeleteSystem(t, system.ID)
 }

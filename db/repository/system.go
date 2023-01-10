@@ -20,8 +20,7 @@ func newSystem(store *db.Store) *system {
 
 func (repository system) New(ctx context.Context, req model.Value) (model.Value, error) {
 	system, err := repository.store.NewSystem(ctx, &db.NewSystemParams{
-		Name:   req.Get("Name").(string),
-		Tables: req.Get("Tables").([]string),
+		Name: req.Get("Name").(string),
 	})
 	if err != nil {
 		return nil, err
@@ -30,7 +29,6 @@ func (repository system) New(ctx context.Context, req model.Value) (model.Value,
 	return model.New(map[string]interface{}{
 		"ID":     system.ID,
 		"Name":   system.Name,
-		"Tables": system.Tables,
 		"Active": system.Active,
 	}), nil
 }
@@ -44,7 +42,6 @@ func (repository system) Get(ctx context.Context, req model.Value) (model.Value,
 	return model.New(map[string]interface{}{
 		"ID":     system.ID,
 		"Name":   system.Name,
-		"Tables": system.Tables,
 		"Active": system.Active,
 	}), nil
 }
@@ -68,7 +65,6 @@ func (repository system) Find(ctx context.Context, req model.Value) ([]model.Val
 			res = append(res, model.New(map[string]interface{}{
 				"ID":     system.ID,
 				"Name":   system.Name,
-				"Tables": system.Tables,
 				"Active": system.Active,
 			}))
 		}
@@ -87,7 +83,6 @@ func (repository system) Find(ctx context.Context, req model.Value) ([]model.Val
 		res = append(res, model.New(map[string]interface{}{
 			"ID":     system.ID,
 			"Name":   system.Name,
-			"Tables": system.Tables,
 			"Active": system.Active,
 		}))
 	}
@@ -113,7 +108,6 @@ func (repository system) List(ctx context.Context, req model.Value) ([]model.Val
 			res = append(res, model.New(map[string]interface{}{
 				"ID":     system.ID,
 				"Name":   system.Name,
-				"Tables": system.Tables,
 				"Active": system.Active,
 			}))
 		}
@@ -132,7 +126,6 @@ func (repository system) List(ctx context.Context, req model.Value) ([]model.Val
 		res = append(res, model.New(map[string]interface{}{
 			"ID":     system.ID,
 			"Name":   system.Name,
-			"Tables": system.Tables,
 			"Active": system.Active,
 		}))
 	}
@@ -148,10 +141,6 @@ func (repository system) Update(ctx context.Context, req model.Value) (res model
 
 		if name, ok := req.Get("Name").(string); ok {
 			arg.Name = name
-		}
-
-		if tables, ok := req.Get("Tables").([]string); ok {
-			arg.Tables = tables
 		}
 
 		system, err := q.UpdateSystem(ctx, arg)
@@ -173,7 +162,6 @@ func (repository system) Update(ctx context.Context, req model.Value) (res model
 		res = model.New(map[string]interface{}{
 			"ID":     system.ID,
 			"Name":   system.Name,
-			"Tables": system.Tables,
 			"Active": system.Active,
 		})
 
@@ -191,7 +179,6 @@ func (repository system) Delete(ctx context.Context, req model.Value) (model.Val
 	return model.New(map[string]interface{}{
 		"ID":     system.ID,
 		"Name":   system.Name,
-		"Tables": system.Tables,
 		"Active": system.Active,
 	}), nil
 }

@@ -18,10 +18,12 @@ type login struct {
 	service  service.Service
 	maker    token.Maker
 	duration time.Duration
+	fn       gin.HandlerFunc
 }
 
 func (controller login) Setup() {
 	controller.router.POST("/login/", controller.login)
+	controller.router.GET("/logout/", controller.fn, controller.logout)
 }
 
 func (controller login) login(ctx *gin.Context) {
@@ -72,11 +74,16 @@ func (controller login) login(ctx *gin.Context) {
 	})
 }
 
-func NewLogin(router *gin.RouterGroup, service service.Service, maker token.Maker, duration time.Duration) *login {
+func (controller login) logout(ctx *gin.Context) {
+
+}
+
+func NewLogin(router *gin.RouterGroup, service service.Service, maker token.Maker, duration time.Duration, fn gin.HandlerFunc) *login {
 	return &login{
 		router:   router,
 		service:  service,
 		maker:    maker,
 		duration: duration,
+		fn:       fn,
 	}
 }

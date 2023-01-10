@@ -5,14 +5,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ThicoMoura/Auth/api/service"
 	"github.com/ThicoMoura/Auth/token"
 	"github.com/gin-gonic/gin"
 )
 
 type md struct {
-	maker   token.Maker
-	service service.Service
+	maker token.Maker
 }
 
 func (middle md) Authentication() gin.HandlerFunc {
@@ -57,9 +55,8 @@ func (middle md) Authentication() gin.HandlerFunc {
 	}
 }
 
-func NewMiddleware(maker token.Maker, service service.Service) *md {
+func NewMiddleware(maker token.Maker) *md {
 	return &md{
-		maker:   maker,
-		service: service,
+		maker: maker,
 	}
 }

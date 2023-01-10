@@ -112,10 +112,10 @@ func TestListSystem(t *testing.T) {
 
 func TestUpdateSystem(t *testing.T) {
 	system := NewSystem(t)
+	defer DeleteSystem(t, system.Get("ID").(uuid.UUID))
 
 	arg := model.New(map[string]interface{}{
 		"ID":     system.Get("ID"),
-		"Tables": []string{util.RandomString(10)},
 		"Active": util.RandomBool(),
 	})
 
@@ -128,6 +128,4 @@ func TestUpdateSystem(t *testing.T) {
 	require.Equal(t, system.Get("Name"), updated.Get("Name"))
 	require.Equal(t, arg.Get("Tables"), updated.Get("Tables"))
 	require.Equal(t, arg.Get("Active"), updated.Get("Active"))
-
-	DeleteSystem(t, system.Get("ID").(uuid.UUID))
 }

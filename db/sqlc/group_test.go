@@ -37,11 +37,13 @@ func DeleteGroup(t *testing.T, ID uuid.UUID) *db.Group {
 }
 
 func TestNewGroup(t *testing.T) {
-	DeleteGroup(t, NewGroup(t).ID)
+	defer DeleteGroup(t, NewGroup(t).ID)
 }
 
 func TestGetGroup(t *testing.T) {
 	group := NewGroup(t)
+
+	defer DeleteGroup(t, group.ID)
 
 	res, err := testQueries.GetGroup(context.Background(), group.ID)
 
@@ -49,8 +51,6 @@ func TestGetGroup(t *testing.T) {
 	require.NotEmpty(t, res)
 
 	require.Equal(t, group, res)
-
-	DeleteGroup(t, group.ID)
 }
 
 func TestFindGroup(t *testing.T) {
@@ -63,6 +63,12 @@ func TestFindGroup(t *testing.T) {
 		}
 		list = append(list, group)
 	}
+
+	defer func() {
+		for _, group := range list {
+			DeleteGroup(t, group.ID)
+		}
+	}()
 
 	res, err := testQueries.FindGroup(context.Background(), "a%")
 
@@ -90,16 +96,19 @@ func TestFindGroup(t *testing.T) {
 	for _, group := range res {
 		require.NotEmpty(t, group)
 	}
-
-	for _, group := range list {
-		DeleteGroup(t, group.ID)
-	}
 }
 
 func TestListGroup(t *testing.T) {
+	var IDs []uuid.UUID
 	for i := 0; i < 10; i++ {
-		NewGroup(t)
+		IDs = append(IDs, NewGroup(t).ID)
 	}
+
+	defer func() {
+		for _, ID := range IDs {
+			DeleteGroup(t, ID)
+		}
+	}()
 
 	list, err := testQueries.ListGroupPage(context.Background(), &db.ListGroupPageParams{
 		Limit:  5,
@@ -120,12 +129,13 @@ func TestListGroup(t *testing.T) {
 
 	for _, group := range list {
 		require.NotEmpty(t, group)
-		DeleteGroup(t, group.ID)
 	}
 }
 
 func TestUpdateGroup(t *testing.T) {
 	group := NewGroup(t)
+
+	defer DeleteGroup(t, group.ID)
 
 	arg := db.UpdateGroupParams{
 		ID:   group.ID,
@@ -140,6 +150,4 @@ func TestUpdateGroup(t *testing.T) {
 	require.Equal(t, group.ID, update.ID)
 	require.Equal(t, arg.Name, update.Name)
 	require.Equal(t, group.Active, update.Active)
-
-	DeleteGroup(t, group.ID)
 }

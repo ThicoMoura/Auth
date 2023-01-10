@@ -30,15 +30,16 @@ func (server Server) setup() {
 	}))
 
 	api := server.router.Group("/api/v1")
+	md := NewMiddleware(server.token)
 
 	NewLogin(api, service.NewLogin(map[string]repository.IRepository{
 		"user":    server.store.Table("user"),
 		"session": server.store.Table("session"),
-	}), server.token, time.Hour).Setup()
+	}), server.token, time.Hour, md.Authentication()).Setup()
 
 	auth := api.Group("/")
 
-	auth.Use(NewMiddleware(server.token, nil).Authentication())
+	auth.Use(md.Authentication())
 
 	NewAccess(auth.Group("/access"), service.NewAccess(server.store.Table("access"))).Setup()
 	NewGroup(auth.Group("/group"), service.NewGroup(server.store.Table("group"))).Setup()
