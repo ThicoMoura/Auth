@@ -28,30 +28,40 @@ func (controller access) Setup() {
 }
 
 func (controller access) list(ctx *gin.Context) {}
-func (controller access) new(ctx *gin.Context)  {}
+
+func (controller access) new(ctx *gin.Context) {}
+
 func (controller access) get(ctx *gin.Context) {
 	var req model.Id
 	if err := ctx.ShouldBindUri(&req); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	access, err := controller.service.Get(ctx, req)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err)
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	ctx.JSON(http.StatusOK, access)
 }
-func (controller access) update(ctx *gin.Context)        {}
-func (controller access) delete(ctx *gin.Context)        {}
-func (controller access) insertGroups(ctx *gin.Context)  {}
+
+func (controller access) update(ctx *gin.Context) {}
+
+func (controller access) delete(ctx *gin.Context) {}
+
+func (controller access) insertGroups(ctx *gin.Context) {}
+
 func (controller access) replaceGroups(ctx *gin.Context) {}
-func (controller access) deleteGroups(ctx *gin.Context)  {}
-func (controller access) insertUsers(ctx *gin.Context)   {}
-func (controller access) replaceUsers(ctx *gin.Context)  {}
-func (controller access) deleteUsers(ctx *gin.Context)   {}
+
+func (controller access) deleteGroups(ctx *gin.Context) {}
+
+func (controller access) insertUsers(ctx *gin.Context) {}
+
+func (controller access) replaceUsers(ctx *gin.Context) {}
+
+func (controller access) deleteUsers(ctx *gin.Context) {}
 
 func NewAccess(router *gin.RouterGroup, service service.Service) *access {
 	return &access{

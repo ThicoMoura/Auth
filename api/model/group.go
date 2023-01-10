@@ -19,7 +19,7 @@ func (model NewG) Get(field string) interface{} {
 }
 
 type UpdateG struct {
-	ID     string   `json:"-"`
+	ID     string   `uri:"id"`
 	Name   *string  `json:"name"`
 	Access []string `json:"Access"`
 	Active *bool    `json:"Active"`

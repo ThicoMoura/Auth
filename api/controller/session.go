@@ -18,8 +18,11 @@ func (controller session) Setup() {
 }
 
 func (controller session) list(ctx *gin.Context)   {}
+
 func (controller session) get(ctx *gin.Context)    {}
+
 func (controller session) delete(ctx *gin.Context) {}
+
 func (controller session) find(ctx *gin.Context)   {}
 
 func NewSession(router *gin.RouterGroup, service service.Service) *session {

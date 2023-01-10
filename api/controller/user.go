@@ -6,8 +6,8 @@ import (
 )
 
 type user struct {
-	router  *gin.RouterGroup
-	service service.Service
+	router   *gin.RouterGroup
+	uService service.Service
 }
 
 func (controller user) Setup() {
@@ -22,19 +22,27 @@ func (controller user) Setup() {
 	controller.router.DELETE("/access/", controller.deleteAccess)
 }
 
-func (controller user) list(ctx *gin.Context)          {}
-func (controller user) new(ctx *gin.Context)           {}
-func (controller user) get(ctx *gin.Context)           {}
-func (controller user) update(ctx *gin.Context)        {}
-func (controller user) delete(ctx *gin.Context)        {}
-func (controller user) profile(ctx *gin.Context)       {}
-func (controller user) insertAccess(ctx *gin.Context)  {}
-func (controller user) replaceAccess(ctx *gin.Context) {}
-func (controller user) deleteAccess(ctx *gin.Context)  {}
+func (controller user) list(ctx *gin.Context) {}
 
-func NewUser(router *gin.RouterGroup, service service.Service) *user {
+func (controller user) new(ctx *gin.Context) {}
+
+func (controller user) get(ctx *gin.Context) {}
+
+func (controller user) update(ctx *gin.Context) {}
+
+func (controller user) delete(ctx *gin.Context) {}
+
+func (controller user) profile(ctx *gin.Context) {}
+
+func (controller user) insertAccess(ctx *gin.Context) {}
+
+func (controller user) replaceAccess(ctx *gin.Context) {}
+
+func (controller user) deleteAccess(ctx *gin.Context) {}
+
+func NewUser(router *gin.RouterGroup, uService service.Service) *user {
 	return &user{
-		router:  router,
-		service: service,
+		router:   router,
+		uService: uService,
 	}
 }
